@@ -51,6 +51,7 @@ function sortFilms(films: Film[]) {
 }
 
 const LAYER_KEY = 'retroreel.layer'
+const MINE_KEY = 'retroreel.mine'
 const NO_LAYER = { films: [] as Film[], logs: new Map<string, FilmLog>(), pending: 0 }
 
 function storedLayer() {
@@ -58,6 +59,17 @@ function storedLayer() {
     return localStorage.getItem(LAYER_KEY) === 'on'
   } catch {
     return false
+  }
+}
+
+/** The "your films" filters that were on at the last visit. */
+function storedMine(): ReadonlySet<Mine> {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(MINE_KEY) ?? '[]')
+    const options = Array.isArray(saved) ? saved : []
+    return new Set(options.filter((option): option is Mine => typeof option === 'string' && option in MINE_LABELS))
+  } catch {
+    return new Set()
   }
 }
 
@@ -72,7 +84,7 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [activeScenes, setActiveScenes] = useState<ReadonlySet<SceneKey>>(new Set())
   /** The "your films" filters that are on: a film shows when it matches any of them, like scenes. */
-  const [mine, setMine] = useState<ReadonlySet<Mine>>(new Set())
+  const [mine, setMine] = useState<ReadonlySet<Mine>>(storedMine)
   const [activeCountries, setActiveCountries] = useState<ReadonlySet<string>>(new Set())
   const [selectedId, setSelectedId] = useState<string | null>(
     () => decodeURIComponent(window.location.hash.slice(1)) || null,
@@ -173,6 +185,14 @@ export default function App() {
       setMine(new Set())
     }
   }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(MINE_KEY, JSON.stringify([...mine]))
+    } catch {
+      // Storage blocked: the filters just won't be remembered.
+    }
+  }, [mine])
 
   const toggleLayer = () => {
     setLayer((current) => {
