@@ -70,6 +70,30 @@ function seeded(text: string) {
   return (hash >>> 0) / 4294967296
 }
 
+/** Width a poster needs on screen, in pixels, before its image is worth drawing: below it, the frame says enough. */
+const POSTER_MIN_WIDTH = 8
+
+/** The zoom and the galaxy area on and near the screen (half a screen around it), when the last gesture ended. */
+interface View {
+  scale: number
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+function viewOf(transform: ZoomTransform, width: number, height: number): View {
+  const marginX = width / 2
+  const marginY = height / 2
+  return {
+    scale: transform.k,
+    left: (-marginX - transform.x) / transform.k,
+    right: (width + marginX - transform.x) / transform.k,
+    top: (-marginY - transform.y) / transform.k,
+    bottom: (height + marginY - transform.y) / transform.k,
+  }
+}
+
 interface StarsProps {
   stars: Star[]
   selectedId: string | null
@@ -78,6 +102,8 @@ interface StarsProps {
   lit: ReadonlySet<string> | null
   highlightSeen: boolean
   logs: LogsByFilm | null
+  /** Poster images are drawn only for films big enough on screen and near it: panning then moves light shapes. */
+  view: View | null
   onSelect: (id: string) => void
   onHover: (star: Star, event: ReactPointerEvent) => void
   onLeave: (star: Star) => void
@@ -94,10 +120,18 @@ const Stars = memo(function Stars({
   lit,
   highlightSeen,
   logs,
+  view,
   onSelect,
   onHover,
   onLeave,
 }: StarsProps) {
+  const detailed = (star: Star) =>
+    view !== null &&
+    star.size * view.scale >= POSTER_MIN_WIDTH &&
+    (star.x ?? 0) >= view.left &&
+    (star.x ?? 0) <= view.right &&
+    (star.y ?? 0) >= view.top &&
+    (star.y ?? 0) <= view.bottom
   const faded = (id: string) => {
     if (neighbours) return !neighbours.has(id)
     if (lit) return !lit.has(id)
@@ -140,7 +174,7 @@ const Stars = memo(function Stars({
               height={height}
               rx={width * 0.08}
             />
-            {cover && (
+            {cover && detailed(star) && (
               <image
                 href={cover}
                 x={-width / 2}
@@ -188,6 +222,8 @@ export function Galaxy({
   const transformRef = useRef<ZoomTransform>(zoomIdentity)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [hover, setHover] = useState<{ star: Star; x: number; y: number } | null>(null)
+  const [view, setView] = useState<View | null>(null)
+  const viewTimer = useRef(0)
   /** Every link at once is a lot to read: by default only the selected (or hovered) film's links show. */
   const [showAllLinks, setShowAllLinks] = useState(false)
   /** Dims every film the visitor has not seen. */
@@ -292,10 +328,19 @@ export function Galaxy({
         sceneRef.current?.setAttribute('transform', event.transform.toString())
         setHover(null)
       })
+      // Which posters to draw is decided once a gesture (or a glide to a film) settles, not on every frame.
+      .on('end', () => {
+        window.clearTimeout(viewTimer.current)
+        viewTimer.current = window.setTimeout(() => {
+          const container = containerRef.current
+          if (container) setView(viewOf(transformRef.current, container.clientWidth, container.clientHeight))
+        }, 120)
+      })
     select(svg).call(behavior).on('dblclick.zoom', null)
     zoomRef.current = behavior
     return () => {
       select(svg).on('.zoom', null)
+      window.clearTimeout(viewTimer.current)
     }
   }, [])
 
@@ -418,6 +463,7 @@ export function Galaxy({
             neighbours={neighbours}
             lit={lit}
             highlightSeen={highlightSeen}
+            view={view}
             logs={logs}
             onSelect={onSelect}
             onHover={showHover}

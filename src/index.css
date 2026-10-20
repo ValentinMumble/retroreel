@@ -1624,9 +1624,10 @@ button.explore-item:hover {
   stroke-width: 2;
 }
 
+/* An outline rather than a glow: a filter on every liked film makes panning stutter. */
 .galaxy-star.is-liked .galaxy-frame {
-  stroke-width: 3.5;
-  filter: drop-shadow(0 0 5px var(--lb-orange));
+  stroke: var(--lb-orange);
+  stroke-width: 3;
 }
 
 .galaxy-heart {
