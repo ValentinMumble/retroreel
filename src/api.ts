@@ -91,3 +91,19 @@ export function fetchLetterboxdFeed(username: string) {
     `/api/letterboxd?user=${encodeURIComponent(username)}`,
   )
 }
+
+/** The TMDB film of a Letterboxd film, with its timeline status. */
+export interface MatchedFilm extends RelatedFilm {
+  status: 'published' | 'pending' | null
+}
+
+export async function matchFilms(films: { title: string; year: number | null; tmdbId: number | null }[]) {
+  return (
+    await request<{ films: (MatchedFilm | null)[] }>('/api/match', { method: 'POST', body: JSON.stringify({ films }) })
+  ).films
+}
+
+/** Owner only: adds the films logged on Letterboxd since the sync started. */
+export async function syncFeed() {
+  return (await request<{ added: Film[] }>('/api/sync', { method: 'POST', body: '{}' })).added
+}

@@ -2320,3 +2320,28 @@ p.lb-status {
 .credits a {
   color: var(--muted);
 }
+
+/* Letterboxd dialog: the visitor's films that are not on the timeline */
+
+.scope-switch {
+  margin-bottom: 4px;
+}
+
+.scope-switch button {
+  font-size: 12.5px;
+}
+
+.missing-list {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.missing-item {
+  cursor: default;
+}
+
+.missing-item .add-button {
+  flex: none;
+  color: var(--accent);
+  font-weight: 600;
+}

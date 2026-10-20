@@ -89,6 +89,28 @@ export async function searchMovies(text: string): Promise<Candidate[]> {
   return answer.results.slice(0, 12).map(candidate)
 }
 
+/**
+ * The TMDB film of a title and year as Letterboxd gives them: the same release year first, then one year apart,
+ * then TMDB's top result. Null when TMDB finds nothing.
+ */
+export async function findMovie(title: string, year: number | null): Promise<Candidate | null> {
+  const params: Record<string, string> = { query: title, include_adult: 'false' }
+  let { results } = await get<{ results: MovieSummary[] }>(
+    'search/movie',
+    year ? { ...params, year: String(year) } : params,
+  )
+  if (results.length === 0 && year) results = (await get<{ results: MovieSummary[] }>('search/movie', params)).results
+  const gap = (movie: MovieSummary) => (year ? Math.abs((releaseYear(movie) ?? 0) - year) : 0)
+  const best = results.find((movie) => gap(movie) === 0) ?? results.find((movie) => gap(movie) === 1) ?? results[0]
+  return best ? candidate(best) : null
+}
+
+/** A film's title, year and poster, by TMDB id. */
+export async function movieSummary(tmdbId: number): Promise<Candidate> {
+  if (!Number.isInteger(tmdbId) || tmdbId <= 0) throw new HttpError(400, 'That is not a TMDB film id')
+  return candidate(await get<MovieSummary>(`movie/${tmdbId}`))
+}
+
 export async function movieDetails(tmdbId: number): Promise<MovieDetails> {
   if (!Number.isInteger(tmdbId) || tmdbId <= 0) throw new HttpError(400, 'That is not a TMDB film id')
   return get<MovieDetails>(`movie/${tmdbId}`, { append_to_response: 'credits,videos,keywords,recommendations,similar' })

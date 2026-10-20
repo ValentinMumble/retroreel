@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { fetchFilms, fetchGalaxyLinks, fetchSuggestions, type GalaxyLink } from './api'
+import { fetchFilms, fetchGalaxyLinks, fetchSuggestions, syncFeed, type GalaxyLink } from './api'
 import { FilmPanel } from './components/FilmPanel'
 import { Galaxy } from './components/Galaxy'
 import { LetterboxdDialog } from './components/LetterboxdDialog'
@@ -30,7 +30,10 @@ const MINE_LABELS: Record<Exclude<Mine, 'all'>, string> = {
 }
 
 function fold(text: string) {
-  return text.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  return text
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
 }
 
 function toggled<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {
@@ -131,7 +134,13 @@ export default function App() {
         setPendingCount(suggestions.length)
       } catch {
         if (!cancelled) forgetOwnerKey()
+        return
       }
+      // The films logged on Letterboxd since the last run go onto the timeline (the daily cron does it too).
+      const added = await syncFeed().catch(() => [])
+      if (cancelled || added.length === 0) return
+      const ids = new Set(added.map((film) => film.id))
+      setAllFilms((current) => sortFilms([...current.filter((film) => !ids.has(film.id)), ...added]))
     }
     void check()
     return () => {
@@ -725,6 +734,9 @@ export default function App() {
         <LetterboxdDialog
           data={letterboxd}
           seenOnTimeline={mineCounts.seen}
+          allFilms={allFilms}
+          owner={owner}
+          onPublished={addFilm}
           onChange={changeLetterboxd}
           onClose={() => setDialog(null)}
         />

@@ -23,6 +23,15 @@ So Retroreel reads the two public sources Letterboxd points members to:
 Feed entries match timeline films by TMDB id. Export entries have no id: they match by title and year, allowing
 one year of difference (festival premiere against release). Everything stays in the browser's localStorage.
 
+The Letterboxd dialog also lists the visitor's watched films that are not on the timeline (favorites, liked and
+top rated first, or all of them), looked up on TMDB through `POST /api/match` and cached in Redis. The owner adds
+them with one click, visitors suggest them.
+
+The owner's own Letterboxd feed (`OWNER_LETTERBOXD`) feeds the timeline: every film logged from the day the sync
+first ran, and not on the timeline yet, is added, with the review as its note. `/api/sync` runs once a day through
+Vercel Cron (`vercel.json`), and each time the owner opens the site. A film it added is never added again, even
+after the owner removes it.
+
 ## How it works
 
 - The films live in a Redis store (Upstash, connected to the Vercel project) under `retroreel:*` keys. The page
@@ -52,6 +61,8 @@ TMDB build, straight from `scripts/catalog.txt`, without posters. Once the Verce
 | --- | --- | --- |
 | `TMDB_API_KEY` | API, data script | TMDB v3 API key or v4 read access token |
 | `OWNER_KEY` | API | Any long random string: the site owner's key |
+| `OWNER_LETTERBOXD` | API | The owner's Letterboxd username, whose new films the sync adds |
+| `CRON_SECRET` | API | Any long random string: Vercel Cron sends it to `/api/sync` |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | API, seed script | Added by Vercel when the Upstash Redis store is connected |
 
 ## The hand-picked catalog

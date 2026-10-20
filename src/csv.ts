@@ -4,7 +4,7 @@ export function parseCsv(text: string): Record<string, string>[] {
   let cells: string[] = []
   let field = ''
   let quoted = false
-  const source = text.replace(/^﻿/, '')
+  const source = text.replace(/^\uFEFF/, '')
   for (let index = 0; index < source.length; index += 1) {
     const char = source[index]
     if (quoted) {

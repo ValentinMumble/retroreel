@@ -13,7 +13,7 @@ import type { Film, SceneKey } from './src/types.ts'
 function slug(text: string) {
   return text
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/&/g, ' and ')
     .replace(/[^a-z0-9]+/g, '-')

@@ -11,6 +11,13 @@ export const PENDING = 'retroreel:pending'
 /** TMDB's recommendations for each published film, as TMDB ids, best first: the galaxy links. */
 export const RELATED = 'retroreel:related'
 
+/** TMDB matches of Letterboxd export titles ("title|year" or "id:<TMDB id>"), so each is looked up once. */
+export const MATCHES = 'retroreel:matches'
+/** The day the owner's feed sync started: films logged from that day on are added to the timeline. */
+export const SYNC_SINCE = 'retroreel:sync-since'
+/** TMDB ids the feed sync has added, so a film the owner removes is not added again. */
+export const SYNC_DONE = 'retroreel:sync-done'
+
 export interface Suggestion extends Film {
   suggestedAt: string
   /** TMDB recommendations, kept for the galaxy once the film is approved. */

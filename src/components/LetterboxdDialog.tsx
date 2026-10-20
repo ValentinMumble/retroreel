@@ -1,11 +1,18 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { fetchFeed, readExport, type LetterboxdData } from '../letterboxd'
+import { missingFilms } from '../logs'
+import type { Film } from '../types'
 import { Dialog } from './Dialog'
+import { MissingFilms } from './MissingFilms'
 
 interface LetterboxdDialogProps {
   data: LetterboxdData | null
   /** Films matched on the timeline, to show what the import did. */
   seenOnTimeline: number
+  /** Every film on the timeline, to list the visitor's films that are not on it. */
+  allFilms: Film[]
+  owner: boolean
+  onPublished: (film: Film) => void
   onChange: (data: LetterboxdData | null) => void
   onClose: () => void
 }
@@ -24,7 +31,15 @@ function errorText(problem: unknown) {
   return problem instanceof Error ? problem.message : String(problem)
 }
 
-export function LetterboxdDialog({ data, seenOnTimeline, onChange, onClose }: LetterboxdDialogProps) {
+export function LetterboxdDialog({
+  data,
+  seenOnTimeline,
+  allFilms,
+  owner,
+  onPublished,
+  onChange,
+  onClose,
+}: LetterboxdDialogProps) {
   const [username, setUsername] = useState(data?.username ?? '')
   const [busy, setBusy] = useState<'import' | 'feed' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -88,6 +103,7 @@ export function LetterboxdDialog({ data, seenOnTimeline, onChange, onClose }: Le
   }
 
   const archiveCount = current.archive?.films.filter((film) => film.watched).length ?? 0
+  const missing = useMemo(() => (data ? missingFilms(allFilms, data) : []), [allFilms, data])
 
   return (
     <Dialog title="Your Letterboxd films" onClose={onClose}>
@@ -181,6 +197,8 @@ export function LetterboxdDialog({ data, seenOnTimeline, onChange, onClose }: Le
           <strong>{seenOnTimeline}</strong> of the films on the timeline are in your Letterboxd films.
         </p>
       )}
+
+      {missing.length > 0 && <MissingFilms films={missing} owner={owner} onPublished={onPublished} />}
 
       <div className="dialog-actions">
         {(current.archive || current.feed) && (
