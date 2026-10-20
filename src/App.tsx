@@ -1,0 +1,734 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { fetchFilms, fetchGalaxyLinks, fetchSuggestions, type GalaxyLink } from './api'
+import { FilmPanel } from './components/FilmPanel'
+import { Galaxy } from './components/Galaxy'
+import { LetterboxdDialog } from './components/LetterboxdDialog'
+import { ReviewDialog } from './components/ReviewDialog'
+import { SuggestDialog, type Pick } from './components/SuggestDialog'
+import { ThemePicker } from './components/ThemePicker'
+import { Timeline, type TimelineHandle } from './components/Timeline'
+import { countryName, flag } from './countries'
+import { fetchFeed, loadLetterboxd, saveLetterboxd, type LetterboxdData } from './letterboxd'
+import { matchLogs } from './logs'
+import { forgetOwnerKey, ownerKey } from './owner'
+import { SCENES, SCENE_ORDER } from './scenes'
+import { cssVars } from './style'
+import type { Film, SceneKey } from './types'
+
+/** Jump buttons, every twenty years: "20s" would not say which century. */
+const JUMPS = [1900, 1920, 1940, 1960, 1980, 2000, 2020]
+const FIRST_YEAR = 1900
+const CURRENT_YEAR = new Date().getFullYear()
+
+type Mine = 'all' | 'seen' | 'unseen' | 'liked' | 'watchlist'
+
+const MINE_LABELS: Record<Exclude<Mine, 'all'>, string> = {
+  seen: 'Seen',
+  unseen: 'Not seen yet',
+  liked: 'Liked',
+  watchlist: 'Watchlist',
+}
+
+function fold(text: string) {
+  return text.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
+function toggled<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {
+  const next = new Set(set)
+  if (next.has(value)) next.delete(value)
+  else next.add(value)
+  return next
+}
+
+function sortFilms(films: Film[]) {
+  return [...films].sort(
+    (first, second) => first.date.localeCompare(second.date) || first.title.localeCompare(second.title),
+  )
+}
+
+function possessive(name: string) {
+  return name.endsWith('s') ? `${name}'` : `${name}'s`
+}
+
+export default function App() {
+  const timelineRef = useRef<TimelineHandle>(null)
+  const [allFilms, setAllFilms] = useState<Film[]>([])
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [query, setQuery] = useState('')
+  const [activeScenes, setActiveScenes] = useState<ReadonlySet<SceneKey>>(new Set())
+  const [mine, setMine] = useState<Mine>('all')
+  const [activeCountries, setActiveCountries] = useState<ReadonlySet<string>>(new Set())
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => decodeURIComponent(window.location.hash.slice(1)) || null,
+  )
+  const [centerYear, setCenterYear] = useState(FIRST_YEAR)
+  const [letterboxd, setLetterboxd] = useState<LetterboxdData | null>(loadLetterboxd)
+  const [owner, setOwner] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
+  const [feedError, setFeedError] = useState<string | null>(null)
+  const [dialog, setDialog] = useState<'suggest' | 'review' | 'letterboxd' | null>(null)
+  /** On phones the filters fold away behind a Filters button. */
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  /** "Light up related" from a film's Explore section: only these films stay bright. */
+  const [lit, setLit] = useState<{ seedId: string; ids: ReadonlySet<string> } | null>(null)
+  const [suggestPick, setSuggestPick] = useState<Pick | null>(null)
+  const [view, setView] = useState<'timeline' | 'galaxy'>(() => {
+    try {
+      return localStorage.getItem('retroreel.view') === 'galaxy' ? 'galaxy' : 'timeline'
+    } catch {
+      return 'timeline'
+    }
+  })
+  const [galaxyLinks, setGalaxyLinks] = useState<GalaxyLink[] | null>(null)
+  const [galaxyError, setGalaxyError] = useState<string | null>(null)
+
+  const changeView = (next: 'timeline' | 'galaxy') => {
+    setView(next)
+    try {
+      localStorage.setItem('retroreel.view', next)
+    } catch {
+      // Storage blocked: the view just won't be remembered.
+    }
+  }
+
+  // The galaxy's links load the first time it is shown.
+  useEffect(() => {
+    if (view !== 'galaxy' || galaxyLinks || galaxyError) return
+    const load = async () => {
+      try {
+        setGalaxyLinks(await fetchGalaxyLinks())
+      } catch (error) {
+        setGalaxyError(error instanceof Error ? error.message : String(error))
+      }
+    }
+    void load()
+  }, [view, galaxyLinks, galaxyError])
+
+  const loadFilms = useCallback(async () => {
+    try {
+      setAllFilms(sortFilms(await fetchFilms()))
+      setLoadState('ready')
+    } catch {
+      setLoadState('error')
+    }
+  }, [])
+
+  useEffect(() => {
+    // The state changes once the fetch answers, not synchronously in the effect.
+    // oxlint-disable-next-line react/set-state-in-effect
+    void loadFilms()
+  }, [loadFilms])
+
+  // Only the site owner may read the review queue: a refusal means the key is wrong or gone.
+  useEffect(() => {
+    if (!ownerKey()) return
+    let cancelled = false
+    const check = async () => {
+      try {
+        const suggestions = await fetchSuggestions()
+        if (cancelled) return
+        setOwner(true)
+        setPendingCount(suggestions.length)
+      } catch {
+        if (!cancelled) forgetOwnerKey()
+      }
+    }
+    void check()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const changeLetterboxd = useCallback((data: LetterboxdData | null) => {
+    saveLetterboxd(data)
+    setLetterboxd(data)
+    if (!data) setMine('all')
+  }, [])
+
+  // The RSS feed brings the films logged since the last visit.
+  useEffect(() => {
+    const stored = loadLetterboxd()
+    if (!stored?.username || !stored.feed) return
+    let cancelled = false
+    const refresh = async () => {
+      try {
+        const feed = await fetchFeed(stored.username!)
+        if (cancelled) return
+        // Merged into the latest state: the visitor may have imported or forgotten their films meanwhile.
+        setLetterboxd((current) => {
+          if (!current?.feed || current.username !== stored.username) return current
+          const next = { ...current, feed: { films: feed.films, name: feed.name, fetchedAt: new Date().toISOString() } }
+          saveLetterboxd(next)
+          return next
+        })
+        setFeedError(null)
+      } catch (error) {
+        if (!cancelled) setFeedError(`Letterboxd feed: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+    void refresh()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const logs = useMemo(
+    () => (letterboxd && allFilms.length ? matchLogs(allFilms, letterboxd) : null),
+    [allFilms, letterboxd],
+  )
+
+  const mineCounts = useMemo(() => {
+    const counts = { seen: 0, unseen: 0, liked: 0, watchlist: 0 }
+    if (!logs) return counts
+    for (const film of allFilms) {
+      const log = logs.get(film.id)
+      if (log?.watched) counts.seen += 1
+      else counts.unseen += 1
+      if (log?.liked) counts.liked += 1
+      if (log?.watchlist) counts.watchlist += 1
+    }
+    return counts
+  }, [allFilms, logs])
+
+  const years = useMemo(() => {
+    const filmYears = allFilms.map((film) => film.year)
+    return {
+      first: Math.min(FIRST_YEAR, ...filmYears),
+      last: Math.max(CURRENT_YEAR, ...filmYears),
+    }
+  }, [allFilms])
+
+  const countries = useMemo(
+    () =>
+      Object.entries(
+        allFilms.reduce<Record<string, number>>((counts, film) => {
+          if (film.country) counts[film.country] = (counts[film.country] ?? 0) + 1
+          return counts
+        }, {}),
+      )
+        .map(([code, count]) => ({ code, count, name: countryName(code) }))
+        .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name)),
+    [allFilms],
+  )
+
+  const films = useMemo(() => {
+    const keep = (film: Film) => {
+      if (mine === 'all' || !logs) return true
+      const log = logs.get(film.id)
+      if (mine === 'seen') return Boolean(log?.watched)
+      if (mine === 'unseen') return !log?.watched
+      if (mine === 'liked') return Boolean(log?.liked)
+      return Boolean(log?.watchlist)
+    }
+    return allFilms.filter(
+      (film) =>
+        (activeScenes.size === 0 || activeScenes.has(film.scene)) &&
+        keep(film) &&
+        (activeCountries.size === 0 || (film.country !== null && activeCountries.has(film.country))),
+    )
+  }, [allFilms, activeScenes, mine, activeCountries, logs])
+
+  const selected = allFilms.find((film) => film.id === selectedId) ?? null
+  // The light-up belongs to the film that turned it on: opening another film or closing the panel ends it.
+  const litIds = lit && lit.seedId === selectedId ? lit.ids : null
+  // Search highlights instead of hiding: matching films stay bright, the others dim.
+  const needle = fold(query.trim())
+  const matchList = useMemo(
+    () =>
+      needle
+        ? films.filter((film) =>
+            fold(`${film.title} ${film.originalTitle ?? ''} ${film.directors.join(' ')}`).includes(needle),
+          )
+        : null,
+    [films, needle],
+  )
+  const matches = useMemo(() => (matchList ? new Set(matchList.map((film) => film.id)) : null), [matchList])
+  const highlighted = litIds ?? matches
+  const firstMatchId = matchList?.[0]?.id ?? null
+
+  // While typing, glide the timeline to the first match.
+  useEffect(() => {
+    if (!firstMatchId) return
+    const timer = window.setTimeout(() => timelineRef.current?.scrollToFilm(firstMatchId), 350)
+    return () => window.clearTimeout(timer)
+  }, [firstMatchId])
+
+  /** Enter in the search box opens the next match (Shift+Enter the previous one). */
+  const stepMatch = (direction: 1 | -1) => {
+    if (!matchList?.length) return
+    const index = matchList.findIndex((film) => film.id === selectedId)
+    const nextIndex =
+      index < 0
+        ? direction === 1
+          ? 0
+          : matchList.length - 1
+        : (index + direction + matchList.length) % matchList.length
+    const next = matchList[nextIndex]
+    setSelectedId(next.id)
+    timelineRef.current?.scrollToFilm(next.id)
+  }
+  const selectedIndex = films.findIndex((film) => film.id === selectedId)
+  const earliest = allFilms[0]
+  const latest = allFilms[allFilms.length - 1]
+
+  const step = useCallback(
+    (offset: 1 | -1) => {
+      const next = films[selectedIndex + offset]
+      if (selectedIndex < 0 || !next) return
+      setSelectedId(next.id)
+      timelineRef.current?.scrollToFilm(next.id)
+    },
+    [films, selectedIndex],
+  )
+
+  const toggleScene = (scene: SceneKey) => setActiveScenes((current) => toggled(current, scene))
+  /** From the film panel: show only that scene (or every scene again if it was the only one). */
+  const only = <T,>(current: ReadonlySet<T>, value: T): ReadonlySet<T> =>
+    current.size === 1 && current.has(value) ? new Set() : new Set([value])
+  const keepSelectedInView = () => {
+    const id = selectedId
+    if (id) requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToFilm(id)))
+  }
+  const toggleCountry = (code: string) => setActiveCountries((current) => toggled(current, code))
+
+  const addFilm = useCallback((film: Film) => {
+    setAllFilms((current) => sortFilms([...current.filter((item) => item.id !== film.id), film]))
+  }, [])
+
+  useEffect(() => {
+    if (loadState !== 'ready') return
+    const url = selectedId ? `#${selectedId}` : window.location.pathname + window.location.search
+    window.history.replaceState(null, '', url)
+  }, [selectedId, loadState])
+
+  // Opened from a shared link: once the films are in, bring that film into view. An unknown id opens nothing.
+  const openedFromLink = useRef(false)
+  useEffect(() => {
+    if (loadState !== 'ready' || openedFromLink.current) return
+    openedFromLink.current = true
+    if (selectedId && allFilms.some((film) => film.id === selectedId)) {
+      requestAnimationFrame(() => timelineRef.current?.scrollToFilm(selectedId, false))
+    }
+  }, [loadState, allFilms, selectedId])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target instanceof HTMLElement ? event.target : null
+      if (target?.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')) {
+        if (event.key === 'Escape') target.blur()
+        return
+      }
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const timeline = timelineRef.current
+      if (!timeline) return
+      switch (event.key) {
+        case 'Escape':
+          if (litIds) setLit(null)
+          else setSelectedId(null)
+          break
+        case 'ArrowRight':
+          if (selectedId) step(1)
+          else timeline.step(1)
+          break
+        case 'ArrowLeft':
+          if (selectedId) step(-1)
+          else timeline.step(-1)
+          break
+        case 'PageDown':
+          timeline.step(1, true)
+          break
+        case 'PageUp':
+          timeline.step(-1, true)
+          break
+        case 'Home':
+          timeline.scrollToEdge('start')
+          break
+        case 'End':
+          timeline.scrollToEdge('end')
+          break
+        case '/':
+          document.querySelector<HTMLInputElement>('.topbar .search')?.focus()
+          break
+        default:
+          return
+      }
+      event.preventDefault()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selectedId, step, litIds])
+
+  const filtered = activeScenes.size > 0 || mine !== 'all' || activeCountries.size > 0
+  const activeFilterCount = activeScenes.size + activeCountries.size + (mine !== 'all' ? 1 : 0)
+  const openSuggest = (pick: Pick | null = null) => {
+    setSuggestPick(pick)
+    setDialog('suggest')
+  }
+  /** From Explore: open a related film, clearing filters that would hide it. */
+  const jumpTo = (id: string) => {
+    if (!films.some((film) => film.id === id)) clearFilters()
+    setSelectedId(id)
+    requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToFilm(id)))
+  }
+  const clearFilters = () => {
+    setQuery('')
+    setActiveScenes(new Set())
+    setMine('all')
+    setActiveCountries(new Set())
+  }
+  const currentJump = [...JUMPS].reverse().find((year) => year <= centerYear) ?? JUMPS[0]
+  const connected = Boolean(letterboxd?.archive || letterboxd?.feed)
+
+  return (
+    <div className={`app${filtersOpen ? ' filters-open' : ''}`}>
+      <header className="topbar">
+        <button type="button" className="brand" onClick={() => timelineRef.current?.scrollToEdge('start')}>
+          <span className="brand-reel" aria-hidden="true" />
+          Retroreel
+        </button>
+        <nav className="decades" aria-label="Jump to a period" hidden={view === 'galaxy'}>
+          {JUMPS.map((year) => (
+            <button
+              key={year}
+              type="button"
+              className={`decade${year === currentJump ? ' is-current' : ''}`}
+              aria-current={year === currentJump ? 'true' : undefined}
+              onClick={() => timelineRef.current?.scrollToYear(year)}
+            >
+              {year}
+            </button>
+          ))}
+        </nav>
+        <div className="finder">
+          <input
+            className="search"
+            type="search"
+            placeholder="Search film or director"
+            aria-label="Search film or director"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return
+              event.preventDefault()
+              stepMatch(event.shiftKey ? -1 : 1)
+            }}
+          />
+          <button
+            type="button"
+            className="toggle filters-button"
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((open) => !open)}
+          >
+            Filters{activeFilterCount > 0 && <b className="count-badge">{activeFilterCount}</b>}
+          </button>
+          <div className="view-switch" role="group" aria-label="View">
+            <button
+              type="button"
+              aria-pressed={view === 'timeline'}
+              aria-label="Timeline"
+              title="Timeline"
+              onClick={() => changeView('timeline')}
+            >
+              <span aria-hidden="true">↔</span>
+              <span className="wide-label"> Timeline</span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={view === 'galaxy'}
+              aria-label="Galaxy"
+              title="Galaxy"
+              onClick={() => changeView('galaxy')}
+            >
+              <span aria-hidden="true">✦</span>
+              <span className="wide-label"> Galaxy</span>
+            </button>
+          </div>
+        </div>
+        <div className="actions">
+          <button
+            type="button"
+            className="toggle"
+            onClick={() => openSuggest()}
+            aria-label={owner ? 'Add a film' : 'Suggest a film'}
+            title={owner ? 'Add a film' : 'Suggest a film'}
+          >
+            <span aria-hidden="true">+</span>
+            <span className="wide-label">{owner ? ' Add' : ' Suggest'}</span>
+          </button>
+          {owner && (
+            <button type="button" className="toggle" onClick={() => setDialog('review')}>
+              Review{pendingCount > 0 && <b className="count-badge">{pendingCount}</b>}
+            </button>
+          )}
+          {connected ? (
+            <button
+              type="button"
+              className="account"
+              onClick={() => setDialog('letterboxd')}
+              title="Your Letterboxd films"
+            >
+              <span className="lb-dots" aria-hidden="true" />
+              <span className="wide-label">{letterboxd?.username ?? 'Letterboxd'}</span>
+            </button>
+          ) : (
+            <button type="button" className="connect" onClick={() => setDialog('letterboxd')}>
+              <span className="lb-dots" aria-hidden="true" />
+              <span className="wide-label">Connect </span>Letterboxd
+            </button>
+          )}
+          <ThemePicker />
+        </div>
+      </header>
+
+      <div className="scenes" role="group" aria-label="Filter by scene">
+        <button
+          type="button"
+          className="chip chip-all"
+          aria-pressed={activeScenes.size === 0}
+          onClick={() => setActiveScenes(new Set())}
+        >
+          All scenes
+        </button>
+        {SCENE_ORDER.map((scene) => (
+          <button
+            key={scene}
+            type="button"
+            className="chip"
+            style={cssVars({ '--scene': SCENES[scene].color })}
+            aria-pressed={activeScenes.has(scene)}
+            onClick={() => toggleScene(scene)}
+          >
+            {SCENES[scene].label}
+          </button>
+        ))}
+        {feedError && <span className="notice">{feedError}</span>}
+        <span className="result-count">
+          {matches
+            ? `${matches.size} ${matches.size === 1 ? 'match' : 'matches'}${matches.size > 0 ? ', Enter to step through' : ''}`
+            : `${films.length} of ${allFilms.length} films`}
+        </span>
+      </div>
+
+      <div className="scenes countries" role="group" aria-label="Filter by country">
+        <button
+          type="button"
+          className="chip chip-all"
+          aria-pressed={activeCountries.size === 0}
+          onClick={() => setActiveCountries(new Set())}
+        >
+          All countries
+        </button>
+        {countries.map((option) => (
+          <button
+            key={option.code}
+            type="button"
+            className="chip chip-country"
+            aria-pressed={activeCountries.has(option.code)}
+            onClick={() => toggleCountry(option.code)}
+          >
+            <span aria-hidden="true">{flag(option.code)}</span> {option.name}
+            <span className="chip-count">{option.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {logs && (
+        <div className="scenes mine" role="group" aria-label="Filter by your Letterboxd films">
+          <button type="button" className="chip chip-all" aria-pressed={mine === 'all'} onClick={() => setMine('all')}>
+            All films
+          </button>
+          {(Object.keys(MINE_LABELS) as Exclude<Mine, 'all'>[]).map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`chip chip-mine is-${option}`}
+              aria-pressed={mine === option}
+              disabled={mineCounts[option] === 0}
+              onClick={() => setMine((current) => (current === option ? 'all' : option))}
+            >
+              {MINE_LABELS[option]}
+              <span className="chip-count">{mineCounts[option]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <Timeline
+        ref={timelineRef}
+        hidden={view === 'galaxy'}
+        films={films}
+        firstYear={years.first}
+        lastYear={years.last}
+        logs={logs}
+        lit={highlighted}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        onCenterYearChange={setCenterYear}
+        intro={
+          <>
+            <p className="kicker">
+              {earliest?.year ?? years.first} to {years.last}
+            </p>
+            <h1>Cinema, year by year</h1>
+            <p>
+              {earliest && latest ? (
+                <>
+                  <strong>{allFilms.length} films</strong>, from {possessive(earliest.directors[0] ?? 'the')}{' '}
+                  <em>{earliest.title}</em> to {possessive(latest.directors[0] ?? 'the')} <em>{latest.title}</em>.
+                </>
+              ) : (
+                'Landmark films from the first silent shorts to today.'
+              )}{' '}
+              Click a poster to read about the film and watch its trailer.
+            </p>
+            {logs ? (
+              <p>
+                <span className="seen-inline">✓</span> marks the <strong>{mineCounts.seen} films</strong> you have seen
+                on Letterboxd, with your stars and <span className="heart-inline">♥</span> likes. A blue ribbon marks
+                your watchlist.
+              </p>
+            ) : (
+              <p>
+                <button type="button" className="link" onClick={() => setDialog('letterboxd')}>
+                  Connect Letterboxd
+                </button>{' '}
+                to see which of these films you have seen. Your films stay in this browser.
+              </p>
+            )}
+            <p className="hint">
+              <span className="hint-keys">
+                Scroll or drag to travel in time. <kbd>←</kbd> <kbd>→</kbd> step, <kbd>/</kbd> search.
+              </span>
+              <span className="hint-touch">Swipe sideways to travel in time.</span>
+            </p>
+            <button
+              type="button"
+              className="go"
+              onClick={() => timelineRef.current?.scrollToYear(earliest?.year ?? years.first)}
+            >
+              Start in {earliest?.year ?? years.first} <span aria-hidden="true">→</span>
+            </button>
+          </>
+        }
+        outro={
+          <>
+            <p className="kicker">Today</p>
+            <h2>To be continued.</h2>
+            <p>
+              {owner
+                ? 'Missing a film that belongs here? Add it, it goes straight onto the timeline.'
+                : 'Missing a film that belongs here? Suggest it, and it joins the timeline once reviewed.'}
+            </p>
+            <button type="button" className="go" onClick={() => openSuggest()}>
+              {owner ? 'Add a film' : 'Suggest a film'}
+            </button>
+            <p className="credits">
+              Film data, posters and recommendations from{' '}
+              <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">
+                TMDB
+              </a>
+              . This site uses the TMDB API but is not endorsed or certified by TMDB, and it is not affiliated with
+              Letterboxd.
+            </p>
+          </>
+        }
+        empty={
+          loadState === 'loading' ? (
+            <p>Loading the films…</p>
+          ) : loadState === 'error' ? (
+            <>
+              <p>The films could not be loaded.</p>
+              <button
+                type="button"
+                className="go"
+                onClick={() => {
+                  setLoadState('loading')
+                  void loadFilms()
+                }}
+              >
+                Try again
+              </button>
+            </>
+          ) : (
+            <>
+              <p>No film matches these filters.</p>
+              {filtered && (
+                <button type="button" className="go" onClick={clearFilters}>
+                  Clear filters
+                </button>
+              )}
+            </>
+          )
+        }
+      />
+
+      {view === 'galaxy' && (
+        <Galaxy
+          films={films}
+          links={galaxyLinks}
+          linksError={galaxyError}
+          logs={logs}
+          selectedId={selectedId}
+          lit={highlighted}
+          panelOpen={selected !== null}
+          firstYear={years.first}
+          lastYear={years.last}
+          onSelect={setSelectedId}
+        />
+      )}
+
+      {selected && (
+        <FilmPanel
+          film={selected}
+          log={logs ? (logs.get(selected.id) ?? null) : undefined}
+          hasPrevious={selectedIndex > 0}
+          hasNext={selectedIndex >= 0 && selectedIndex < films.length - 1}
+          sceneActive={activeScenes.size === 1 && activeScenes.has(selected.scene)}
+          countryActive={
+            selected.country !== null && activeCountries.size === 1 && activeCountries.has(selected.country)
+          }
+          onFilterScene={() => {
+            setActiveScenes((current) => only(current, selected.scene))
+            keepSelectedInView()
+          }}
+          onFilterCountry={() => {
+            const country = selected.country
+            if (!country) return
+            setActiveCountries((current) => only(current, country))
+            keepSelectedInView()
+          }}
+          allFilms={allFilms}
+          owner={owner}
+          lit={litIds !== null}
+          onJump={jumpTo}
+          onSuggest={openSuggest}
+          onLight={(ids) => setLit(ids ? { seedId: selected.id, ids } : null)}
+          onPrevious={() => step(-1)}
+          onNext={() => step(1)}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
+
+      {dialog === 'suggest' && (
+        <SuggestDialog
+          key={suggestPick?.tmdbId ?? 'search'}
+          owner={owner}
+          initialPick={suggestPick}
+          onClose={() => setDialog(null)}
+          onPublished={addFilm}
+        />
+      )}
+      {dialog === 'review' && (
+        <ReviewDialog onClose={() => setDialog(null)} onPublished={addFilm} onCountChange={setPendingCount} />
+      )}
+      {dialog === 'letterboxd' && (
+        <LetterboxdDialog
+          data={letterboxd}
+          seenOnTimeline={mineCounts.seen}
+          onChange={changeLetterboxd}
+          onClose={() => setDialog(null)}
+        />
+      )}
+    </div>
+  )
+}

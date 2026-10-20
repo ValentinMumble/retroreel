@@ -1,0 +1,469 @@
+# year | director | title | scene | note
+# Scenes: silent, classic, romance, crime, western, epic, realism, arthouse, newhollywood, horror, scifi, action,
+# comedy, musical, animation, indie, doc
+# Optional extra columns: "id:<TMDB id>" picks the exact film (scripts/pin_ids.py fills it from Wikidata),
+# "q:<search text>" changes the TMDB search, "c:<XX>" sets the country (two-letter code).
+
+1902 | Georges Méliès | A Trip to the Moon | silent | A stage magician turned filmmaker lands a rocket in the eye of the Moon. | id:775
+1903 | Edwin S. Porter | The Great Train Robbery | silent | About twelve minutes long, ending on an outlaw who fires his gun straight at the audience. | id:5698
+1914 | Giovanni Pastrone | Cabiria | silent | Huge sets, early tracking shots and the first appearance of the strongman Maciste. | id:5153
+1914 | Winsor McCay | Gertie the Dinosaur | animation | McCay drew about 10,000 frames, then stood on stage giving orders to his cartoon dinosaur. | id:100246
+1915 | D.W. Griffith | The Birth of a Nation | silent | Big advances in editing and scale, used for a racist story that helped revive the Ku Klux Klan. | id:618
+1915 | Louis Feuillade | Les Vampires | silent | Ten episodes of Paris crime, with Musidora as the cat burglar Irma Vep in a black bodysuit. | id:29082
+1916 | D.W. Griffith | Intolerance | silent | Four stories from four eras cut together, with a giant Babylon set built in Hollywood. | id:3059
+
+1920 | Robert Wiene | The Cabinet of Dr. Caligari | silent | Painted sets with crooked walls and slanted shadows: the start of German Expressionism on film. | id:234
+1921 | Charlie Chaplin | The Kid | silent | Chaplin's first feature: the Tramp raises an abandoned boy, played by Jackie Coogan. | id:10098
+1921 | Victor Sjöström | The Phantom Carriage | silent | Ghosts made with double exposures, in a film Ingmar Bergman said he watched once a year. | id:58129
+1922 | F.W. Murnau | Nosferatu | silent | An unauthorized Dracula: a court ordered every print destroyed, but some copies survived. | id:653
+1922 | Robert J. Flaherty | Nanook of the North | doc | An Inuit family in Arctic Canada, some scenes staged: often called the first feature documentary. | id:669
+1922 | Benjamin Christensen | Häxan | silent | A Danish director's essay on witchcraft, mixing old engravings with staged scenes of devils. | id:57283
+1923 | Fred C. Newmeyer & Sam Taylor | Safety Last! | silent | Harold Lloyd hangs from the hands of a clock high above a Los Angeles street. | id:22596
+1924 | Buster Keaton | Sherlock Jr. | silent | Keaton plays a cinema projectionist who walks into the film he is showing. | id:992
+1925 | Sergei Eisenstein | Battleship Potemkin | silent | The Odessa Steps sequence made Soviet montage editing famous around the world. | id:643
+1925 | Charlie Chaplin | The Gold Rush | silent | The Tramp in the Klondike, boiling and eating his own shoe for dinner. | id:962
+1926 | Buster Keaton & Clyde Bruckman | The General | silent | Keaton chases a stolen train across the Civil War South, doing his own stunts. | id:961
+1926 | Lotte Reiniger | The Adventures of Prince Achmed | animation | Cut-paper silhouettes moved by hand: the oldest surviving animated feature. | id:19354
+1927 | Fritz Lang | Metropolis | silent | Workers below, the rich above and a robot double: Fritz Lang's city of the future. | id:19
+1927 | F.W. Murnau | Sunrise: A Song of Two Humans | silent | Murnau's first Hollywood film won a one-time Oscar for Unique and Artistic Production. | id:631
+1927 | Abel Gance | Napoleon | silent | For its finale, three projectors fill three screens side by side, decades before widescreen. | id:42536
+1927 | Alan Crosland | The Jazz Singer | silent | Mostly silent, but Al Jolson sings and talks: the first feature with synchronized dialogue. | id:939
+1928 | Carl Theodor Dreyer | The Passion of Joan of Arc | silent | Told almost entirely in close-ups of Renée Falconetti, in her only major film role. | id:780
+1928 | Walt Disney & Ub Iwerks | Steamboat Willie | animation | The first Mickey Mouse cartoon released, with music and sound effects synced to the action. | id:53565
+1928 | King Vidor | The Crowd | silent | An ordinary clerk in New York, played by an unknown actor Vidor found among MGM's extras. | id:3061
+1929 | Dziga Vertov | Man with a Movie Camera | doc | A day of Soviet city life with no actors, no story and no title cards. | id:26317
+1929 | Luis Buñuel | Un Chien Andalou | silent | Buñuel and Salvador Dalí wrote it from their dreams, refusing any image that could be explained. | id:626
+1929 | G.W. Pabst | Pandora's Box | silent | American actress Louise Brooks went to Berlin to play Lulu, and her black bob became famous. | id:905
+
+1930 | Lewis Milestone | All Quiet on the Western Front | epic | Young German soldiers in the trenches of World War I; it won the Oscar for Best Picture. | id:143
+1930 | Josef von Sternberg | The Blue Angel | classic | Shot in German and English versions at once, it made Marlene Dietrich an international star. | id:228
+1931 | Charlie Chaplin | City Lights | comedy | Chaplin kept it silent, with a score he wrote himself, after Hollywood had moved to talkies. | id:901
+1931 | Fritz Lang | M | crime | Fritz Lang's first sound film, where a whistled Grieg tune gives away a child killer. | id:832
+1931 | James Whale | Frankenstein | horror | Boris Karloff with a flat head and neck bolts, in makeup designed by Jack Pierce for Universal. | id:3035
+1932 | Howard Hawks | Scarface | crime | Censors held it back for a year and made the studio add the subtitle The Shame of the Nation. | id:877
+1932 | Ernst Lubitsch | Trouble in Paradise | comedy | Two jewel thieves fall in love in Venice, in a comedy made just before the Production Code was enforced. | id:195
+1932 | Yasujirō Ozu | I Was Born, But... | realism | Two boys lose respect for their father when they see him clown for his boss, in Ozu's silent comedy. | id:28268
+1933 | Merian C. Cooper & Ernest B. Schoedsack | King Kong | action | Stop-motion effects by Willis O'Brien bring a giant ape from Skull Island to New York. | id:244
+1933 | Leo McCarey | Duck Soup | comedy | Groucho runs the small country of Freedonia, and Harpo copies him in the famous mirror scene. | id:3063
+1933 | Lloyd Bacon | 42nd Street | musical | Busby Berkeley's dance numbers with dozens of chorus girls brought the musical back to life. | id:3062
+1934 | Frank Capra | It Happened One Night | comedy | The first film to win all five top Oscars: picture, director, actor, actress and screenplay. | id:3078
+1934 | Jean Vigo | L'Atalante | arthouse | Newlyweds on a river barge: Jean Vigo's only feature, finished as he was dying at 29. | id:43904
+1935 | Mark Sandrich | Top Hat | musical | Fred Astaire and Ginger Rogers dance to Cheek to Cheek, a song Irving Berlin wrote for the film. | id:3080
+1935 | Alfred Hitchcock | The 39 Steps | crime | An innocent man on the run across Scotland, handcuffed to a stranger: the Hitchcock pattern. | id:260
+1935 | Leni Riefenstahl | Triumph of the Will | doc | Riefenstahl filmed the 1934 Nazi rally in Nuremberg: its craft is studied, its purpose condemned. | id:39266
+1936 | Charlie Chaplin | Modern Times | comedy | The Tramp's last film, and the first time Chaplin's voice is heard, singing a nonsense song. | id:3082
+1937 | Jean Renoir | La Grande Illusion | epic | French officers in a German prison camp in World War I; Goebbels called it public enemy number one. | id:777
+1937 | David Hand | Snow White and the Seven Dwarfs | animation | Called Disney's Folly while in production, it became the biggest hit of the sound era so far. | id:408
+1938 | Howard Hawks | Bringing Up Baby | comedy | Cary Grant plays a shy scientist, Katharine Hepburn an heiress with a pet leopard named Baby. | id:900
+1938 | Michael Curtiz & William Keighley | The Adventures of Robin Hood | action | Errol Flynn in three-strip Technicolor, the most expensive Warner Bros. film up to then. | id:10907
+1938 | Sergei Eisenstein & Dmitri Vasilyev | Alexander Nevsky | epic | A battle on the ice cut to a Prokofiev score, with Eisenstein matching images to the music. | id:10235
+1939 | Victor Fleming | The Wizard of Oz | musical | Kansas in sepia, Oz in bright Technicolor, and Judy Garland singing Over the Rainbow. | id:630
+1939 | Victor Fleming | Gone with the Wind | epic | Almost four hours long, it won eight Oscars, one going to Hattie McDaniel, the first Black winner. | id:770
+1939 | John Ford | Stagecoach | western | Strangers share a coach through Monument Valley, in the film that made John Wayne a star. | id:995
+1939 | Jean Renoir | The Rules of the Game | arthouse | A weekend at a country house: booed at its premiere, cut down, then restored in 1959. | id:776
+1939 | Dave Fleischer | Gulliver's Travels | animation | The Fleischer studio's answer to Snow White, and the second animated feature made in America. | id:42518
+
+1940 | John Ford | The Grapes of Wrath | realism | Henry Fonda as Tom Joad, driving his family out of the Dust Bowl toward California. | id:596
+1940 | Charlie Chaplin | The Great Dictator | comedy | Chaplin mocks Hitler as Adenoid Hynkel, while the United States was not yet at war. | id:914
+1940 | Howard Hawks | His Girl Friday | comedy | Fast overlapping dialogue, and a star reporter played by Rosalind Russell, a part first written for a man. | id:3085
+1940 | Ben Sharpsteen & Hamilton Luske | Pinocchio | animation | Disney's second feature, with When You Wish Upon a Star, which won the Oscar for Best Song. | id:10895
+1940 | Dorothy Arzner | Dance, Girl, Dance | classic | Made by the only woman then directing at a major Hollywood studio, about dancers and the men watching. | id:32196
+1941 | Orson Welles | Citizen Kane | classic | Deep focus, low ceilings and a 25-year-old director who got final cut from RKO. | id:15
+1941 | John Huston | The Maltese Falcon | crime | John Huston's first film as director, with Humphrey Bogart as the detective Sam Spade. | id:963
+1941 | Preston Sturges | Sullivan's Travels | comedy | A Hollywood director of comedies goes on the road as a tramp to learn about suffering. | id:16305
+1942 | Michael Curtiz | Casablanca | romance | The script was still being rewritten during the shoot, and gave us Here's looking at you, kid. | id:289
+1942 | Ernst Lubitsch | To Be or Not to Be | comedy | Polish actors fool the Nazis in occupied Warsaw, released while the war was still going on. | id:198
+1942 | Jacques Tourneur | Cat People | horror | Producer Val Lewton showed almost nothing and let shadows do the scaring on a small budget. | id:25508
+1943 | Maya Deren & Alexander Hammid | Meshes of the Afternoon | arthouse | Deren and Hammid shot this dream loop in their Los Angeles home: a key film of the US avant-garde. | id:27040
+1943 | Luchino Visconti | Ossessione | realism | Visconti's unofficial take on The Postman Always Rings Twice, a first step toward neorealism. | id:5155
+1944 | Billy Wilder | Double Indemnity | crime | Billy Wilder and Raymond Chandler wrote it, and an insurance man narrates his own crime. | id:996
+1944 | Vincente Minnelli | Meet Me in St. Louis | musical | A family year in 1903 St. Louis, with Judy Garland singing The Trolley Song. | id:909
+1945 | Roberto Rossellini | Rome, Open City | realism | Shot on the streets of Rome soon after the Germans left: the start of Italian neorealism. | id:307
+1945 | David Lean | Brief Encounter | romance | Two married strangers meet at a railway station, set to Rachmaninoff's Second Piano Concerto. | id:851
+1945 | Marcel Carné | Children of Paradise | romance | Made in occupied France, with its Jewish set designer and composer working in secret. | id:2457
+1946 | Frank Capra | It's a Wonderful Life | classic | A box office disappointment that became a Christmas TV staple after its copyright lapsed. | id:1585
+1946 | William Wyler | The Best Years of Our Lives | classic | Three veterans come home; Harold Russell, who lost both hands in the war, won two Oscars for it. | id:887
+1946 | Jean Cocteau | Beauty and the Beast | arthouse | Jean Cocteau's fairy tale, where human arms hold candles out of the castle walls. | id:648
+1946 | Alfred Hitchcock | Notorious | crime | Ingrid Bergman spies on Nazis in Rio, and the camera glides down to a key hidden in her hand. | id:303
+1947 | Michael Powell & Emeric Pressburger | Black Narcissus | classic | Nuns in the Himalayas, all shot in an English studio with painted mountains and Technicolor. | id:16391
+1947 | Jacques Tourneur | Out of the Past | crime | Robert Mitchum cannot outrun his past, in a film noir told largely in flashback. | id:678
+1948 | Vittorio De Sica | Bicycle Thieves | realism | A father and son search Rome for a stolen bike; the father was played by a factory worker. | id:5156
+1948 | Michael Powell & Emeric Pressburger | The Red Shoes | musical | Powell and Pressburger stop the story for a long ballet sequence in full Technicolor. | id:19542
+1948 | John Huston | The Treasure of the Sierra Madre | action | Shot partly in Mexico; John Huston directed his father Walter, and both won Oscars for it. | id:3090
+1948 | Fei Mu | Spring in a Small Town | romance | A quiet love triangle in a war-ruined Chinese town, often named the best Chinese film ever made. | id:21058
+1949 | Carol Reed | The Third Man | crime | Postwar Vienna in tilted shots, with a score played on a single zither by Anton Karas. | id:1092
+1949 | Yasujirō Ozu | Late Spring | realism | A widowed father and his daughter, the first of Ozu's six films with Setsuko Hara. | id:20530
+
+1950 | Akira Kurosawa | Rashomon | arthouse | One crime told four ways; its win at Venice opened the West to Japanese cinema. | id:548
+1950 | Billy Wilder | Sunset Boulevard | classic | A forgotten silent film star, played by Gloria Swanson, herself a star of the silent era. | id:599
+1950 | Joseph L. Mankiewicz | All About Eve | classic | Bette Davis warns of a bumpy night, in a film with 14 Oscar nominations, a record at the time. | id:705
+1950 | Luis Buñuel | Los Olvidados | realism | Street kids in Mexico City shown without comfort: it won Buñuel best director at Cannes. | id:800
+1951 | Elia Kazan | A Streetcar Named Desire | classic | Marlon Brando brought Method acting to the screen as Stanley Kowalski. | id:702
+1952 | Stanley Donen & Gene Kelly | Singin' in the Rain | musical | A comic look back at Hollywood's painful switch to talking pictures in 1927. | id:872
+1952 | Fred Zinnemann | High Noon | western | A marshal waits for a killer's train, and the story plays out almost in real time. | id:288
+1952 | Akira Kurosawa | Ikiru | realism | A Tokyo clerk learns he has months to live and looks for one useful thing to do. | id:3782
+1953 | Yasujirō Ozu | Tokyo Story | realism | Old parents visit their busy grown children in Tokyo, filmed with Ozu's low, still camera. | id:18148
+1953 | Kenji Mizoguchi | Ugetsu | arthouse | A ghost story set in Japan's civil wars, with Mizoguchi's long takes moving through mist. | id:14696
+1953 | Luis García Berlanga | Welcome Mr. Marshall! | comedy | A poor Castilian village dresses up as Andalusia to win American aid from the Marshall Plan. | id:31936
+1953 | Ida Lupino | The Hitch-Hiker | crime | The first mainstream American film noir directed by a woman, actress Ida Lupino. | id:41462
+1954 | Akira Kurosawa | Seven Samurai | action | Hire a team, train the villagers, defend the town: the blueprint for every ensemble action film. | id:346
+1954 | Alfred Hitchcock | Rear Window | crime | A photographer stuck in a wheelchair watches his neighbors through the window, and so do we. | id:567
+1954 | Elia Kazan | On the Waterfront | classic | Marlon Brando as a dockworker who could have been a contender; it won eight Oscars. | id:654
+1954 | Federico Fellini | La Strada | arthouse | A strongman and a simple girl on the road; it won the first Oscar for foreign language film. | id:405
+1954 | Ishirō Honda | Godzilla | scifi | A monster woken by nuclear tests, made in Japan nine years after Hiroshima. | id:1678
+1955 | Satyajit Ray | Pather Panchali | realism | Satyajit Ray's first film, a childhood in a Bengal village, shot over three years on a tiny budget. | id:5801
+1955 | Carl Theodor Dreyer | Ordet | arthouse | A Danish farm family and their faith, filmed in long, slow takes; it won the Golden Lion at Venice. | id:48035
+1955 | Charles Laughton | The Night of the Hunter | crime | Charles Laughton's only film as director, with LOVE and HATE tattooed on Robert Mitchum's hands. | id:3112
+1955 | Douglas Sirk | All That Heaven Allows | romance | A widow falls for her younger gardener, and her small town judges her in bright Technicolor. | id:43316
+1955 | Agnès Varda | La Pointe Courte | arthouse | Agnès Varda's first film, made in a fishing quarter of Sète: an early sign of the French New Wave. | id:54436
+1956 | John Ford | The Searchers | western | John Wayne spends years hunting for his kidnapped niece across Monument Valley. | id:3114
+1956 | Alain Resnais | Night and Fog | doc | Alain Resnais mixes color shots of the empty camps with black and white archive footage. | id:803
+1956 | Don Siegel | Invasion of the Body Snatchers | scifi | Neighbors replaced by calm, empty copies, read as a fable about both communism and McCarthyism. | id:11549
+1957 | Ingmar Bergman | The Seventh Seal | arthouse | A knight back from the Crusades plays chess with Death as the plague spreads across Sweden. | id:490
+1957 | Sidney Lumet | 12 Angry Men | classic | Sidney Lumet's first feature, set almost entirely in one jury room on a hot day. | id:389
+1957 | Stanley Kubrick | Paths of Glory | epic | French soldiers sent on a hopeless World War I attack; France did not show it until 1975. | id:975
+1957 | Guru Dutt | Pyaasa | romance | Guru Dutt plays an unknown poet, with songs by S.D. Burman and words by Sahir Ludhianvi. | id:41053
+1957 | Mikhail Kalatozov | The Cranes Are Flying | romance | A Soviet love story in wartime, with a free moving camera; it won the Palme d'Or in 1958. | id:38360
+1958 | Alfred Hitchcock | Vertigo | crime | Mixed reviews in 1958, then first place in Sight and Sound's 2012 critics' poll. | id:426
+1958 | Orson Welles | Touch of Evil | crime | Opens with a tracking shot of more than three minutes through a border town, all in one take. | id:1480
+1958 | Andrzej Wajda | Ashes and Diamonds | arthouse | Zbigniew Cybulski in dark glasses, on the last day of World War II in a small Polish town. | id:5055
+1959 | Billy Wilder | Some Like It Hot | comedy | Two musicians hide in an all-woman band; it came out without the Production Code seal. | id:239
+1959 | Alfred Hitchcock | North by Northwest | crime | Cary Grant chased by a crop-duster plane and across the faces of Mount Rushmore. | id:213
+1959 | François Truffaut | The 400 Blows | arthouse | Truffaut's first feature, a boy adrift in Paris, and the start of the French New Wave. | id:147
+1959 | Alain Resnais | Hiroshima Mon Amour | arthouse | Written by Marguerite Duras, with memories of the war cutting into a short love affair. | id:5544
+1959 | William Wyler | Ben-Hur | epic | The chariot race took months to shoot, and the film won 11 Oscars, a record at the time. | id:665
+
+1960 | Jean-Luc Godard | Breathless | arthouse | Jump cuts, a handheld camera and Paris streets: the French New Wave in one film. | id:269
+1960 | Federico Fellini | La Dolce Vita | arthouse | A week of Rome's night life; its photographer Paparazzo gave us the word "paparazzi". | id:439
+1960 | Alfred Hitchcock | Psycho | horror | Hitchcock shot it fast and cheap with his TV show crew; cinemas let no one in once it began. | id:539
+1960 | Billy Wilder | The Apartment | comedy | A clerk lends his flat to his bosses for affairs; the last black-and-white Best Picture until 1993. | id:284
+1960 | Michelangelo Antonioni | L'Avventura | arthouse | Booed at Cannes, then given the Jury Prize, it made long silences and empty landscapes the story. | id:5165
+1961 | Robert Wise & Jerome Robbins | West Side Story | musical | Romeo and Juliet among New York street gangs; it won ten Oscars, including Best Picture. | id:1725
+1961 | Blake Edwards | Breakfast at Tiffany's | romance | Audrey Hepburn sings "Moon River" on a fire escape in this loose take on Truman Capote's novella. | id:164
+1961 | Akira Kurosawa | Yojimbo | action | A ronin plays two gangs against each other; Leone copied it for A Fistful of Dollars and was sued. | id:11878
+1961 | Luis Buñuel | Viridiana | arthouse | Buñuel came back to Spain to make it; it won the Palme d'Or and was then banned in Spain. | id:4497
+1961 | Robert Rossen | The Hustler | classic | Paul Newman as pool shark Fast Eddie Felson, taking on Jackie Gleason's Minnesota Fats. | id:990
+1962 | David Lean | Lawrence of Arabia | epic | Shot in 70mm in the deserts of Jordan, Spain and Morocco, with Peter O'Toole in his first big lead. | id:947
+1962 | Robert Mulligan | To Kill a Mockingbird | classic | Gregory Peck won an Oscar as Atticus Finch, a lawyer in Harper Lee's 1930s Alabama. | id:595
+1962 | Agnès Varda | Cléo from 5 to 7 | arthouse | A singer waits for medical test results, followed through Paris almost in real time. | id:499
+1962 | Roman Polanski | Knife in the Water | crime | Polanski's first feature: a couple, a young hitchhiker and a sailboat. It was nominated for an Oscar. | id:11502
+1962 | Yasujirō Ozu | An Autumn Afternoon | realism | Ozu's last film: a widower decides it is time for his daughter to marry. | id:50759
+1963 | Federico Fellini | 8½ | arthouse | A film director with a creative block, close to Fellini's own life; it won the foreign film Oscar. | id:422
+1963 | Alfred Hitchcock | The Birds | horror | There is no music score: the bird cries were made on an electronic instrument, the Trautonium. | id:571
+1963 | Luchino Visconti | The Leopard | epic | Burt Lancaster as a Sicilian prince watching his world fade; it won the Palme d'Or. | id:1040
+1963 | Akira Kurosawa | High and Low | crime | A rich shoe executive must decide whether to pay a ransom for his driver's kidnapped son. | id:12493
+1963 | John Sturges | The Great Escape | epic | Based on a real 1944 breakout of Allied airmen from a German prison camp. | id:5925
+1964 | Stanley Kubrick | Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb | comedy | A comedy about nuclear war in which Peter Sellers plays three different roles. | id:935
+1964 | Richard Lester | A Hard Day's Night | musical | The Beatles play themselves running from screaming fans, shot quickly in black and white. | id:704
+1964 | Jacques Demy | The Umbrellas of Cherbourg | musical | Every line is sung, to music by Michel Legrand; it won the Palme d'Or. | id:5967
+1964 | Satyajit Ray | Charulata | realism | Ray adapts a Tagore story about a lonely, gifted wife in 1870s Calcutta. | id:35790
+1964 | Glauber Rocha | Black God, White Devil | arthouse | A cowherd follows a preacher, then a bandit, through Brazil's dry northeast: Cinema Novo's calling card. | id:67612
+1965 | Robert Wise | The Sound of Music | musical | Julie Andrews in the Austrian Alps; it passed Gone with the Wind as the top box office hit of its time. | id:15121
+1965 | David Lean | Doctor Zhivago | romance | A doctor and poet caught in the Russian Revolution; Spain and Finland stood in for Russia. | id:907
+1965 | Jean-Luc Godard | Pierrot le Fou | arthouse | Belmondo and Anna Karina run from Paris to the south of France, in bold reds and blues. | id:2786
+1965 | Roman Polanski | Repulsion | horror | Catherine Deneuve alone in a London flat as her mind gives way; Polanski's first film in English. | id:11481
+1965 | Miloš Forman | Loves of a Blonde | arthouse | A shoe factory girl falls for a visiting pianist, played mostly by non-actors: the Czech New Wave. | id:39387
+1966 | Sergio Leone | The Good, the Bad and the Ugly | western | Three gunmen chase Confederate gold in the Civil War, to Ennio Morricone's coyote-howl theme. | id:429
+1966 | Ingmar Bergman | Persona | arthouse | A nurse and a silent actress share a seaside house until their faces seem to merge. | id:797
+1966 | Gillo Pontecorvo | The Battle of Algiers | epic | Shot like a newsreel with mostly non-actors in Algiers; it won the Golden Lion at Venice. | id:17295
+1966 | Andrei Tarkovsky | Andrei Rublev | epic | The life of a medieval Russian icon painter; Soviet censors held it back for years. | id:895
+1966 | Věra Chytilová | Daisies | arthouse | Two young women, both named Marie, play pranks in a collage of colors; Czech authorities banned it. | id:46919
+1967 | Arthur Penn | Bonnie and Clyde | newhollywood | Warren Beatty and Faye Dunaway as real 1930s bank robbers; its sudden violence shocked critics. | id:475
+1967 | Mike Nichols | The Graduate | newhollywood | Dustin Hoffman as a lost graduate, an affair with Mrs. Robinson and songs by Simon & Garfunkel. | id:37247
+1967 | Jean-Pierre Melville | Le Samouraï | crime | Alain Delon as a silent hitman in a trench coat; John Woo and Jim Jarmusch borrowed from it. | id:5511
+1967 | Jacques Tati | Playtime | comedy | Tati built a glass and steel city set, nicknamed Tativille, and the cost nearly ruined him. | id:10227
+1967 | Wolfgang Reitherman | The Jungle Book | animation | The last animated film Walt Disney worked on; he died while it was being made. | id:9325
+1968 | Stanley Kubrick | 2001: A Space Odyssey | scifi | Written with Arthur C. Clarke; its space effects won Kubrick the only Oscar of his career. | id:62
+1968 | Roman Polanski | Rosemary's Baby | horror | A young wife in a New York apartment block grows wary of her neighbors; Ruth Gordon won an Oscar. | id:805
+1968 | George A. Romero | Night of the Living Dead | horror | Made near Pittsburgh for about $114,000, it created the modern flesh-eating zombie. | id:10331
+1968 | Sergio Leone | Once Upon a Time in the West | western | Henry Fonda, Hollywood's good guy, plays a cold killer; Morricone's music was played on set. | id:335
+1968 | Tomás Gutiérrez Alea | Memories of Underdevelopment | arthouse | A rich writer stays in Havana after the revolution, in a film mixing fiction and newsreel. | id:47576
+1969 | Dennis Hopper | Easy Rider | newhollywood | Two bikers cross America; made for under $500,000, it sent studios chasing young audiences. | id:624
+1969 | John Schlesinger | Midnight Cowboy | newhollywood | The only X-rated film ever to win the Oscar for Best Picture. | id:3116
+1969 | Sam Peckinpah | The Wild Bunch | western | Aging outlaws near the Mexican border, with slow-motion gunfights that shocked audiences in 1969. | id:576
+1969 | Ken Loach | Kes | realism | A lonely Yorkshire schoolboy trains a young kestrel; Loach cast local children and non-actors. | id:13384
+1969 | Albert Maysles & David Maysles & Charlotte Zwerin | Salesman | doc | Four door-to-door Bible salesmen, filmed with no narration and no interviews. | id:27375
+
+1970 | Robert Altman | M*A*S*H | comedy | Army surgeons joke their way through the Korean War; it won the top prize at Cannes. | id:651
+1970 | Bernardo Bertolucci | The Conformist | arthouse | A weak man joins Mussolini's secret police, shot by Vittorio Storaro in bold light and color. | id:8416
+1970 | Albert Maysles & David Maysles & Charlotte Zwerin | Gimme Shelter | doc | Follows the Rolling Stones to the free Altamont concert of December 1969, where a fan was killed. | id:132
+1970 | Barbara Loden | Wanda | newhollywood | Barbara Loden wrote, directed and starred, as a woman drifting through Pennsylvania coal country. | id:80560
+1970 | Alejandro Jodorowsky | El Topo | western | A surreal Mexican western that played for months at midnight in New York, starting the midnight movie. | id:13041
+1971 | Stanley Kubrick | A Clockwork Orange | scifi | Alex and his droogs talk in Nadsat slang; Kubrick pulled it from British cinemas in 1973, until 2000. | id:185
+1971 | William Friedkin | The French Connection | crime | Gene Hackman as Popeye Doyle, with a car chase under a Brooklyn elevated train; it won Best Picture. | id:1051
+1971 | Hal Ashby | Harold and Maude | comedy | A young man obsessed with death befriends a 79-year-old woman, to songs by Cat Stevens. | id:343
+1971 | Peter Bogdanovich | The Last Picture Show | newhollywood | Teenagers in a dying 1950s Texas town, filmed in black and white as its only cinema closes. | id:25188
+1971 | Elaine May | A New Leaf | comedy | Elaine May wrote, directed and starred, then fought Paramount after it cut her version. | id:36850
+1971 | King Hu | A Touch of Zen | action | Its bamboo forest fight inspired Crouching Tiger, Hidden Dragon; it won a prize at Cannes in 1975. | id:44154
+1972 | Francis Ford Coppola | The Godfather | newhollywood | Paramount fought the casting of Brando and Pacino; for a while it was the top-grossing film ever. | id:238
+1972 | Bob Fosse | Cabaret | musical | Liza Minnelli sings in a Berlin nightclub as the Nazis rise; it won eight Oscars. | id:10784
+1972 | Werner Herzog | Aguirre, the Wrath of God | arthouse | Herzog took his crew down real Peruvian rivers, with Klaus Kinski as a mad conquistador. | id:2000
+1972 | Luis Buñuel | The Discreet Charm of the Bourgeoisie | arthouse | Six well-off friends try again and again to sit down to dinner; it won the foreign film Oscar. | id:4593
+1972 | Ingmar Bergman | Cries and Whispers | arthouse | Rooms painted deep red frame three sisters; Sven Nykvist won the Oscar for its cinematography. | id:10238
+1973 | William Friedkin | The Exorcist | horror | The first horror film nominated for Best Picture; William Peter Blatty won an Oscar for its script. | id:9552
+1973 | George Lucas | American Graffiti | newhollywood | One last summer night of cruising in 1962 California, scored only with old rock and roll hits. | id:838
+1973 | Víctor Erice | The Spirit of the Beehive | arthouse | A girl in 1940 Spain sees Frankenstein and goes looking for the monster; made under Franco. | id:4495
+1973 | Robert Clouse | Enter the Dragon | action | The first kung fu film made with a Hollywood studio, released just after Bruce Lee died at 32. | id:9461
+1973 | Djibril Diop Mambéty | Touki Bouki | arthouse | Two young lovers in Dakar dream of Paris, riding a motorbike with cattle horns on its handlebars. | id:77771
+1974 | Francis Ford Coppola | The Godfather Part II | newhollywood | The first sequel to win Best Picture, cutting between young Vito and his son Michael. | id:240
+1974 | Roman Polanski | Chinatown | crime | Jack Nicholson's private eye uncovers a fight over water in 1930s Los Angeles. | id:829
+1974 | Tobe Hooper | The Texas Chain Saw Massacre | horror | Made for under $300,000 in the Texas summer heat, with far less blood on screen than people remember. | id:30497
+1974 | John Cassavetes | A Woman Under the Influence | newhollywood | Gena Rowlands plays a wife and mother in crisis; Cassavetes raised the money himself. | id:29845
+1974 | Rainer Werner Fassbinder | Ali: Fear Eats the Soul | arthouse | A German cleaning woman in her sixties marries a much younger Moroccan worker. | id:216
+1975 | Steven Spielberg | Jaws | action | A broken mechanical shark forced Spielberg to hide it, and summer blockbusters were born. | id:578
+1975 | Miloš Forman | One Flew Over the Cuckoo's Nest | newhollywood | The second film to win all five top Oscars, after It Happened One Night. | id:510
+1975 | Chantal Akerman | Jeanne Dielman, 23 quai du Commerce, 1080 Bruxelles | arthouse | Three days of a widow's chores in near real time; Sight and Sound's 2022 poll named it the greatest film. | id:44012
+1975 | Terry Gilliam & Terry Jones | Monty Python and the Holy Grail | comedy | With no money for horses, the knights pretend to ride while servants bang coconut halves. | id:762
+1975 | Ramesh Sippy | Sholay | action | Two small-time crooks hunt a bandit in a Bollywood western that ran for five years in one Bombay cinema. | id:12259
+1975 | Albert Maysles & David Maysles & Ellen Hovde & Muffie Meyer | Grey Gardens | doc | A mother and daughter, relatives of Jackie Kennedy, live in a decaying East Hampton mansion. | id:17346
+1976 | Martin Scorsese | Taxi Driver | newhollywood | Robert De Niro's lonely cab driver asks "You talkin' to me?", a line he made up on set. | id:103
+1976 | John G. Avildsen | Rocky | newhollywood | Sylvester Stallone wrote it and would only sell the script if he played the boxer; it won Best Picture. | id:1366
+1976 | Sidney Lumet | Network | newhollywood | A TV anchor tells viewers to yell "I'm as mad as hell"; Paddy Chayefsky's script won an Oscar. | id:10774
+1976 | Brian De Palma | Carrie | horror | The first film made from a Stephen King novel; Sissy Spacek and Piper Laurie were both Oscar nominated. | id:7340
+1976 | Barbara Kopple | Harlan County U.S.A. | doc | Kopple filmed Kentucky coal miners through a long, violent strike; it won the documentary Oscar. | id:33324
+1977 | George Lucas | Star Wars | scifi | Lucas kept the merchandise and sequel rights, and it became the biggest box office hit of its time. | id:11
+1977 | Woody Allen | Annie Hall | comedy | It beat Star Wars for Best Picture, and Diane Keaton's menswear look became a fashion trend. | id:703
+1977 | Dario Argento | Suspiria | horror | One of the last films printed with Technicolor's dye process, scored by the Italian rock band Goblin. | id:11906
+1977 | Larisa Shepitko | The Ascent | epic | Two Soviet partisans in the snows of occupied Belarus; it won the Golden Bear in Berlin. | id:50183
+1977 | Nobuhiko Obayashi | House | horror | A schoolgirls' trip to an aunt's country house, built on ideas from Obayashi's young daughter. | id:25623
+1978 | John Carpenter | Halloween | horror | Made for about $300,000; the killer's mask was a cheap Captain Kirk mask painted white. | id:948
+1978 | Michael Cimino | The Deer Hunter | newhollywood | Pennsylvania steelworkers go to Vietnam; it won Best Picture and five Oscars in all. | id:11778
+1978 | Terrence Malick | Days of Heaven | newhollywood | Much of it was shot at "magic hour" after sunset, and it won the Oscar for cinematography. | id:16642
+1978 | Randal Kleiser | Grease | musical | John Travolta and Olivia Newton-John in a 1950s high school; the top-grossing film of 1978. | id:621
+1978 | Martin Rosen | Watership Down | animation | Rabbits search for a new home in Richard Adams's novel; Art Garfunkel's "Bright Eyes" topped UK charts. | id:11837
+1979 | Francis Ford Coppola | Apocalypse Now | epic | Over a year of shooting in the Philippines, through a typhoon and a heart attack; it shared the Palme d'Or. | id:28
+1979 | Ridley Scott | Alien | scifi | H.R. Giger designed the creature; the tagline: "In space no one can hear you scream." | id:348
+1979 | Andrei Tarkovsky | Stalker | scifi | A guide leads two men into the forbidden Zone; most of the first year's footage was lost and reshot. | id:1398
+1979 | George Miller | Mad Max | action | Made in Australia for about A$350,000, it held the record for the most profitable film for years. | id:9659
+1979 | Krzysztof Kieślowski | Camera Buff | arthouse | A factory worker buys a camera to film his baby and ends up filming the life of his town. | id:42164
+
+1980 | Stanley Kubrick | The Shining | horror | Kubrick used the new Steadicam to follow a boy's tricycle down the hotel's long halls. | id:694
+1980 | Martin Scorsese | Raging Bull | newhollywood | Robert De Niro gained about 60 pounds to play boxer Jake LaMotta in later life. | id:1578
+1980 | Irvin Kershner | The Empire Strikes Back | scifi | Lucas paid for it himself and gave the directing job to his former film school teacher. | id:1891
+1980 | Jim Abrahams & David Zucker & Jerry Zucker | Airplane! | comedy | Spoofs the 1957 film Zero Hour! almost scene by scene, with serious actors playing it straight. | id:813
+1980 | John Landis | The Blues Brothers | musical | Aretha Franklin, Ray Charles and James Brown sing, and over 100 cars get wrecked. | id:525
+1981 | Steven Spielberg | Raiders of the Lost Ark | action | George Lucas's idea for Indiana Jones came from the adventure serials of the 1930s and 1940s. | id:85
+1981 | Wolfgang Petersen | Das Boot | epic | Life on a cramped German submarine in the Second World War, filmed inside a full-size replica. | id:387
+1981 | Sam Raimi | The Evil Dead | horror | Made by friends in a remote Tennessee cabin; Stephen King's praise helped it find a distributor. | id:764
+1981 | George Miller | Mad Max 2 | action | Its desert tanker chase and punk leather costumes set the look of post-apocalyptic films. | id:8810
+1981 | Andrzej Żuławski | Possession | horror | A marriage falls apart in divided Berlin; Isabelle Adjani won best actress at Cannes. | id:21484
+1982 | Steven Spielberg | E.T. the Extra-Terrestrial | scifi | A boy hides a stranded alien; it passed Star Wars as the highest-grossing film of all time. | id:601
+1982 | Ridley Scott | Blade Runner | scifi | A box office flop whose rainy, neon Los Angeles of 2019 shaped decades of science fiction. | id:78
+1982 | John Carpenter | The Thing | horror | Flopped in the summer of E.T.; Rob Bottin built its shape-shifting creature effects by hand. | id:1091
+1982 | Ingmar Bergman | Fanny and Alexander | arthouse | Bergman's farewell to cinema, about two children in a theater family; it won four Oscars. | id:5961
+1982 | Godfrey Reggio | Koyaanisqatsi | doc | No words, only images of nature and cities set to the music of Philip Glass. | id:11314
+1983 | Brian De Palma | Scarface | crime | Oliver Stone wrote this remake, moving the 1932 gangster story to cocaine-era Miami. | id:111
+1983 | Chris Marker | Sans Soleil | doc | Letters from a traveling cameraman link Japan, Guinea-Bissau and the way we remember. | id:1563
+1983 | David Cronenberg | Videodrome | horror | James Woods runs a small TV station and hunts for a strange violent broadcast: Cronenberg's body horror. | id:837
+1983 | Bob Clark | A Christmas Story | comedy | A boy in 1940s Indiana wants only one thing for Christmas: a Red Ryder BB gun. | id:850
+1983 | Euzhan Palcy | Sugar Cane Alley | realism | A boy grows up near the cane fields of 1930s Martinique; it won the Silver Lion at Venice. | id:42115
+1984 | James Cameron | The Terminator | scifi | Made for about $6.4 million, with Arnold Schwarzenegger as a killer machine sent back from 2029. | id:218
+1984 | Ivan Reitman | Ghostbusters | comedy | Dan Aykroyd first wrote it for John Belushi; Ray Parker Jr.'s theme song went to number one. | id:620
+1984 | Wim Wenders | Paris, Texas | arthouse | Written by Sam Shepard, scored by Ry Cooder's slide guitar, and winner of the Palme d'Or. | id:655
+1984 | Hayao Miyazaki | Nausicaä of the Valley of the Wind | animation | Its success led Miyazaki and Isao Takahata to found Studio Ghibli the next year. | id:81
+1984 | Jonathan Demme | Stop Making Sense | musical | Talking Heads build the show song by song, starting with David Byrne alone and a boombox. | id:24128
+1984 | Jim Jarmusch | Stranger Than Paradise | indie | Shot in single takes in black and white, partly on film stock left over from a Wim Wenders shoot. | id:469
+1985 | Robert Zemeckis | Back to the Future | scifi | Eric Stoltz played Marty for weeks before Michael J. Fox replaced him; it was the top hit of 1985. | id:105
+1985 | Elem Klimov | Come and See | epic | A Belarusian boy joins the partisans; Klimov fought Soviet censors for years and used live ammunition. | id:25237
+1985 | Akira Kurosawa | Ran | epic | King Lear moved to feudal Japan; Kurosawa's costliest film, with 1,400 handmade suits of armor. | id:11645
+1985 | Claude Lanzmann | Shoah | doc | Over nine hours of interviews about the Holocaust, made without any archive footage. | id:42044
+1985 | Jackie Chan | Police Story | action | Jackie Chan slides down a pole strung with lights through a mall, one of many stunts he did himself. | id:9056
+1985 | Agnès Varda | Vagabond | arthouse | A young drifter's last weeks, told by the people she met; it won the Golden Lion at Venice. | id:44018
+1986 | James Cameron | Aliens | action | Cameron turned Ridley Scott's horror film into a war film; Sigourney Weaver got an Oscar nomination. | id:679
+1986 | David Lynch | Blue Velvet | crime | A student finds a human ear in a field and uncovers the dark side of his small town. | id:793
+1986 | Oliver Stone | Platoon | epic | Oliver Stone drew on his own time as an infantry soldier in Vietnam; it won Best Picture. | id:792
+1986 | John Woo | A Better Tomorrow | action | Chow Yun-fat's long coat and twin pistols launched Hong Kong's "heroic bloodshed" films. | id:11471
+1986 | Spike Lee | She's Gotta Have It | indie | Spike Lee's first feature, shot in about twelve days for $175,000. | id:27995
+1987 | Paul Verhoeven | RoboCop | scifi | A Detroit cop rebuilt as a machine, in a satire of corporate greed and TV news. | id:5548
+1987 | Rob Reiner | The Princess Bride | scifi | William Goldman adapted his own novel, framed as a grandfather reading to his sick grandson. | id:2493
+1987 | Wim Wenders | Wings of Desire | arthouse | Angels listen to people's thoughts in divided Berlin, filmed mostly in black and white. | id:144
+1987 | Kathryn Bigelow | Near Dark | horror | A vampire western in which the word "vampire" is never spoken. | id:11879
+1987 | Abbas Kiarostami | Where Is the Friend's House? | realism | A schoolboy in a northern Iranian village sets out to return his classmate's notebook. | id:49964
+1988 | John McTiernan | Die Hard | action | Bruce Willis, then a TV comedy actor, plays a cop trapped in a Los Angeles tower on Christmas Eve. | id:562
+1988 | Hayao Miyazaki | My Neighbor Totoro | animation | Released as a double bill with Grave of the Fireflies; Totoro became Studio Ghibli's logo. | id:8392
+1988 | Isao Takahata | Grave of the Fireflies | animation | A brother and sister struggle to survive in Kobe at the end of the Second World War. | id:12477
+1988 | Katsuhiro Otomo | Akira | animation | Otomo adapted his own manga; voices were recorded first so the lips match, rare in anime then. | id:149
+1988 | Giuseppe Tornatore | Cinema Paradiso | romance | A film director remembers his village cinema and its projectionist; it won the foreign film Oscar. | id:11216
+1988 | Errol Morris | The Thin Blue Line | doc | Its research helped free a man wrongly jailed for the murder of a Dallas police officer. | id:14285
+1988 | Wong Kar-wai | As Tears Go By | arthouse | Wong Kar-wai's first film, a Hong Kong gangster story starring Andy Lau and Maggie Cheung. | id:24163
+1988 | Claire Denis | Chocolat | arthouse | Claire Denis's first feature, drawn from her childhood in colonial Cameroon. | id:41951
+1988 | Zhang Yimou | Red Sorghum | arthouse | Zhang Yimou's first film as director, and the first Chinese film to win the Golden Bear at Berlin. | id:42006
+1989 | Spike Lee | Do the Right Thing | indie | The hottest day of the year on one Brooklyn block, with Public Enemy's "Fight the Power" on repeat. | id:925
+1989 | Steven Soderbergh | sex, lies, and videotape | indie | Shot for about $1.2 million, it won the Palme d'Or and helped launch 1990s indie film. | id:1412
+1989 | Rob Reiner | When Harry Met Sally... | romance | Nora Ephron's script asks if men and women can be just friends, over twelve years in New York. | id:639
+1989 | John Woo | The Killer | action | Chow Yun-fat as a hitman with a conscience; Woo's slow-motion gunfights shaped 1990s Hollywood action. | id:10835
+1989 | Hou Hsiao-hsien | A City of Sadness | arthouse | The first film to show Taiwan's 1947 massacre of protesters; it won the Golden Lion at Venice. | id:49982
+1989 | Ron Clements & John Musker | The Little Mermaid | animation | Songs by Alan Menken and Howard Ashman began Disney's run of hits in the 1990s. | id:10144
+
+1990 | Martin Scorsese | Goodfellas | crime | The true story of mob informant Henry Hill, with a long single shot through the Copacabana club. | id:769
+1990 | Tim Burton | Edward Scissorhands | scifi | The first of Johnny Depp's many films with Tim Burton, a fairy tale set in pastel suburbia. | id:162
+1990 | Kevin Costner | Dances with Wolves | western | Kevin Costner's first film as director won seven Oscars, with much of its dialogue in Lakota. | id:581
+1990 | Abbas Kiarostami | Close-Up | realism | A real man who posed as director Mohsen Makhmalbaf replays his own story for the camera. | id:30017
+1990 | Jennie Livingston | Paris Is Burning | doc | Filmed at the drag balls of 1980s New York, the scene that gave the world voguing. | id:31225
+1991 | Jonathan Demme | The Silence of the Lambs | crime | The third film to win all five top Oscars: Picture, Director, Actor, Actress and Screenplay. | id:274
+1991 | James Cameron | Terminator 2: Judgment Day | scifi | Its liquid-metal T-1000 pushed computer-made effects into the mainstream. | id:280
+1991 | Gary Trousdale & Kirk Wise | Beauty and the Beast | animation | The first animated film nominated for the Oscar for Best Picture. | id:10020
+1991 | Krzysztof Kieślowski | The Double Life of Véronique | arthouse | Irène Jacob plays two look-alike women, one in Poland and one in France, and won Best Actress at Cannes. | id:1600
+1991 | Zhang Yimou | Raise the Red Lantern | romance | Gong Li as the fourth wife of a rich man in 1920s China; it won the Silver Lion at Venice. | id:10404
+1992 | Clint Eastwood | Unforgiven | western | Eastwood's Best Picture winner, dedicated to his mentors Sergio Leone and Don Siegel. | id:33
+1992 | John Woo | Hard Boiled | action | John Woo's last Hong Kong film before Hollywood, with a hospital shootout filmed in one long take. | id:11782
+1992 | Sally Potter | Orlando | arthouse | Tilda Swinton lives four centuries and changes sex, from Virginia Woolf's novel. | id:9300
+1992 | Spike Lee | Malcolm X | epic | When the budget ran out, Spike Lee raised money from Black stars like Oprah Winfrey and Michael Jordan. | id:1883
+1993 | Steven Spielberg | Jurassic Park | action | Its digital dinosaurs looked real, and it was the top-grossing film ever until Titanic. | id:329
+1993 | Steven Spielberg | Schindler's List | epic | Shot mostly in black and white, it won Spielberg his first Oscars, for Best Picture and Best Director. | id:424
+1993 | Chen Kaige | Farewell My Concubine | epic | Two Peking opera actors across half a century of Chinese history; still the only Chinese-language Palme d'Or. | id:10997
+1993 | Jane Campion | The Piano | romance | Jane Campion became the first woman to win the Palme d'Or, shared with Farewell My Concubine. | id:713
+1993 | Harold Ramis | Groundhog Day | comedy | A weatherman relives the same day again and again; the title became an everyday phrase. | id:137
+1994 | Quentin Tarantino | Pulp Fiction | crime | Three crime stories told out of order, and a Palme d'Or that made Miramax the indie powerhouse. | id:680
+1994 | Frank Darabont | The Shawshank Redemption | crime | A box-office flop that found its audience on video and cable, and long topped IMDb's user ratings. | id:278
+1994 | Wong Kar-wai | Chungking Express | arthouse | Shot quickly in Hong Kong during a break from editing Wong's martial arts film Ashes of Time. | id:11104
+1994 | Steve James | Hoop Dreams | doc | Follows two Chicago teenagers chasing basketball careers, filmed over five years. | id:14275
+1994 | Roger Allers & Rob Minkoff | The Lion King | animation | Disney's biggest hand-drawn hit, with songs by Elton John and Tim Rice. | id:8587
+1994 | Béla Tarr | Sátántangó | arthouse | A seven-hour Hungarian film built from very long takes, from László Krasznahorkai's novel. | id:31414
+1995 | John Lasseter | Toy Story | animation | The first feature film made entirely with computer animation. | id:862
+1995 | Michael Mann | Heat | crime | Al Pacino and Robert De Niro share a scene for the first time, over coffee in a diner. | id:949
+1995 | Mathieu Kassovitz | La Haine | realism | One day in the life of three young men from a Paris housing estate after a riot, shot in black and white. | id:406
+1995 | Richard Linklater | Before Sunrise | romance | Two strangers talk through one night in Vienna; sequels followed nine and eighteen years later. | id:76
+1995 | Aditya Chopra | Dilwale Dulhania Le Jayenge | romance | Ran at Mumbai's Maratha Mandir cinema for over 1,000 weeks, the longest run in Indian film history. | id:19404
+1996 | Joel Coen & Ethan Coen | Fargo | crime | Opens by claiming to be a true story, which it is not; Frances McDormand won the Oscar. | id:275
+1996 | Danny Boyle | Trainspotting | indie | Edinburgh heroin addicts from Irvine Welsh's novel, set to Iggy Pop and Underworld. | id:627
+1996 | Mike Leigh | Secrets & Lies | realism | Mike Leigh built the story from months of improvisation with his cast; it won the Palme d'Or. | id:11159
+1996 | Wes Craven | Scream | horror | A slasher whose characters know the rules of slasher films; it revived the genre. | id:4232
+1997 | James Cameron | Titanic | romance | Tied Ben-Hur's record of 11 Oscars and was the first film to gross over $1 billion. | id:597
+1997 | Hayao Miyazaki | Princess Mononoke | animation | Became the highest-grossing film ever in Japan, until Titanic passed it months later. | id:128
+1997 | Abbas Kiarostami | Taste of Cherry | realism | A man drives around Tehran looking for someone to bury him; it shared the Palme d'Or. | id:30020
+1997 | Roberto Benigni | Life Is Beautiful | comedy | A father turns life in a Nazi camp into a game for his son; Benigni won the Oscar for Best Actor. | id:637
+1998 | Joel Coen & Ethan Coen | The Big Lebowski | comedy | A box-office disappointment that grew a cult following, with its own fan festival, Lebowski Fest. | id:115
+1998 | Steven Spielberg | Saving Private Ryan | epic | Opens with a long, brutal recreation of the D-Day landing at Omaha Beach. | id:857
+1998 | Hideo Nakata | Ring | horror | A cursed videotape kills its viewers in seven days; it set off the J-horror wave and a US remake. | id:2671
+1998 | Thomas Vinterberg | The Celebration | arthouse | The first Dogme 95 film: handheld camera, natural light, no added music. | id:309
+1999 | Lana Wachowski & Lilly Wachowski | The Matrix | scifi | Made "bullet time" famous: a frozen moment the camera seems to circle around. | id:603
+1999 | David Fincher | Fight Club | crime | From Chuck Palahniuk's novel; it disappointed in cinemas, then became a cult hit on DVD. | id:550
+1999 | Pedro Almodóvar | All About My Mother | romance | Won Almodóvar Best Director at Cannes and the Oscar for Best Foreign Language Film. | id:99
+1999 | Claire Denis | Beau Travail | arthouse | Claire Denis moves Melville's Billy Budd to the French Foreign Legion in Djibouti. | id:14626
+1999 | Daniel Myrick & Eduardo Sánchez | The Blair Witch Project | horror | A tiny-budget found-footage film that sold itself online as a real missing-persons case. | id:2667
+1999 | Jean-Pierre Dardenne & Luc Dardenne | Rosetta | realism | The Dardenne brothers' first Palme d'Or; it inspired a Belgian law on youth wages. | id:11489
+
+2000 | Wong Kar-wai | In the Mood for Love | romance | Two neighbors in 1962 Hong Kong find out that their spouses are having an affair. | id:843
+2000 | Edward Yang | Yi Yi | arthouse | Edward Yang's last film follows three generations of a Taipei family; Best Director at Cannes. | id:25538
+2000 | Ang Lee | Crouching Tiger, Hidden Dragon | action | Still the highest-grossing foreign-language film ever released in the US. | id:146
+2000 | Lars von Trier | Dancer in the Dark | musical | Björk plays a nearly blind factory worker who escapes into musical numbers; it won the Palme d'Or. | id:16
+2000 | Agnès Varda | The Gleaners and I | doc | Varda films people who gather what others leave behind, using a small digital camera. | id:44379
+2001 | Hayao Miyazaki | Spirited Away | animation | Japan's top-grossing film for nearly 20 years; it won the Golden Bear and the Oscar for Animated Feature. | id:129
+2001 | David Lynch | Mulholland Drive | arthouse | Began as a TV pilot that ABC turned down; it topped a 2016 BBC critics' poll of the century's films. | id:1018
+2001 | Jean-Pierre Jeunet | Amélie | comedy | A shy Paris waitress secretly improves the lives of the people around her in Montmartre. | id:194
+2001 | Peter Jackson | The Lord of the Rings: The Fellowship of the Ring | scifi | First of three Tolkien films shot back to back in New Zealand; the third won 11 Oscars. | id:120
+2001 | Lucrecia Martel | La Ciénaga | arthouse | Lucrecia Martel's debut: two families sweat out a lazy summer at a run-down country house in Argentina. | id:58429
+2002 | Fernando Meirelles & Kátia Lund | City of God | crime | Two decades of gang life in a Rio favela, cast mostly with young non-actors from poor neighborhoods. | id:598
+2002 | Andrew Lau & Alan Mak | Infernal Affairs | crime | A police mole in a triad and a triad mole in the police; Scorsese remade it as The Departed. | id:10775
+2002 | Sam Raimi | Spider-Man | action | The first film to earn $100 million in a single opening weekend. | id:557
+2002 | Alexander Sokurov | Russian Ark | arthouse | A walk through St Petersburg's Hermitage museum and 300 years of Russian history, in one unbroken shot. | id:16646
+2003 | Park Chan-wook | Oldboy | crime | Won the Grand Prix at Cannes; its hallway hammer fight is filmed in one sideways tracking shot. | id:670
+2003 | Bong Joon-ho | Memories of Murder | crime | Based on South Korea's first known serial murders, which were still unsolved when it came out. | id:11423
+2003 | Sofia Coppola | Lost in Translation | indie | Two lonely Americans meet in a Tokyo hotel; Sofia Coppola won the Oscar for its script. | id:153
+2003 | Andrew Stanton & Lee Unkrich | Finding Nemo | animation | A clownfish crosses the ocean to find his son; Pixar's first Oscar for Best Animated Feature. | id:12
+2004 | Michel Gondry | Eternal Sunshine of the Spotless Mind | romance | Charlie Kaufman's script about erasing an ex from memory won the Oscar for Original Screenplay. | id:38
+2004 | Edgar Wright | Shaun of the Dead | comedy | Billed as a romantic comedy with zombies, from the team behind the British TV show Spaced. | id:747
+2004 | Oliver Hirschbiegel | Downfall | epic | Bruno Ganz plays Hitler's last days in the Berlin bunker; one rant became a lasting internet meme. | id:613
+2004 | Ousmane Sembène | Moolaadé | realism | Ousmane Sembène's last film: village women in West Africa shelter girls from genital cutting. | id:39504
+2005 | Ang Lee | Brokeback Mountain | romance | Two Wyoming ranch hands in love over 20 years; it won the Golden Lion and Ang Lee's first directing Oscar. | id:142
+2005 | Michael Haneke | Caché | arthouse | A Paris couple receives anonymous videotapes of their own home; Haneke won Best Director at Cannes. | id:445
+2005 | Werner Herzog | Grizzly Man | doc | Herzog builds a portrait of bear lover Timothy Treadwell from Treadwell's own footage. | id:501
+2005 | David Cronenberg | A History of Violence | crime | A small-town diner owner becomes a local hero, and men from his past come looking for him. | id:59
+2006 | Guillermo del Toro | Pan's Labyrinth | scifi | A girl's dark fairy tale in Spain in 1944, after the civil war; it won three Oscars. | id:1417
+2006 | Alfonso Cuarón | Children of Men | scifi | A future Britain where no child has been born for 18 years, filmed in long single takes. | id:9693
+2006 | Florian Henckel von Donnersmarck | The Lives of Others | crime | A Stasi officer spies on an East Berlin playwright; it won the Oscar for Best Foreign Language Film. | id:582
+2006 | Jia Zhangke | Still Life | realism | Shot in a river town being flooded by the Three Gorges Dam; it won the Golden Lion. | id:2346
+2007 | Paul Thomas Anderson | There Will Be Blood | epic | Daniel Day-Lewis as a ruthless California oil man, loosely based on Upton Sinclair's novel Oil! | id:7345
+2007 | Joel Coen & Ethan Coen | No Country for Old Men | crime | The Coens' Best Picture winner, from Cormac McCarthy's novel, with almost no music. | id:6977
+2007 | Cristian Mungiu | 4 Months, 3 Weeks and 2 Days | realism | Two students arrange an illegal abortion in 1987 Romania; it won the Palme d'Or. | id:2009
+2007 | Marjane Satrapi & Vincent Paronnaud | Persepolis | animation | Satrapi adapts her own graphic memoir of growing up in Iran during and after the revolution. | id:2011
+2007 | John Carney | Once | musical | Shot in Dublin on a tiny budget; its song Falling Slowly won the Oscar. | id:5723
+2008 | Christopher Nolan | The Dark Knight | action | Heath Ledger's Joker won a posthumous Oscar, and some scenes were shot with IMAX cameras. | id:155
+2008 | Andrew Stanton | WALL·E | animation | Its first act follows a lonely trash robot on an empty Earth with almost no dialogue. | id:10681
+2008 | Tomas Alfredson | Let the Right One In | horror | A bullied boy befriends a vampire girl in a snowy Stockholm suburb in the early 1980s. | id:13310
+2008 | James Marsh | Man on Wire | doc | Philippe Petit's 1974 high-wire walk between the Twin Towers; it won the Oscar for Best Documentary. | id:14048
+2008 | Kathryn Bigelow | The Hurt Locker | epic | Kathryn Bigelow became the first woman to win the Oscar for Best Director. | id:12162
+2009 | Quentin Tarantino | Inglourious Basterds | epic | Christoph Waltz won the Cannes acting prize and an Oscar as SS officer Hans Landa. | id:16869
+2009 | Pete Docter & Bob Peterson | Up | animation | Its wordless opening tells a whole marriage in about four minutes. | id:14160
+2009 | James Cameron | Avatar | scifi | Its 3D release set off a 3D boom, and it became the highest-grossing film ever. | id:19995
+2009 | Andrea Arnold | Fish Tank | realism | Andrea Arnold cast a non-actor she spotted arguing with her boyfriend on a train platform. | id:24469
+2009 | Juan José Campanella | The Secret in Their Eyes | crime | Argentina's second foreign-language Oscar winner, with a famous long take over a football stadium. | id:25376
+
+2010 | Christopher Nolan | Inception | scifi | A heist inside layered dreams; the rotating hallway fight was built and filmed for real. | id:27205
+2010 | David Fincher | The Social Network | indie | Aaron Sorkin's script about the founding of Facebook, scored by Trent Reznor and Atticus Ross. | id:37799
+2010 | Apichatpong Weerasethakul | Uncle Boonmee Who Can Recall His Past Lives | arthouse | The first Thai film to win the Palme d'Or, with a ghost and a monkey spirit at the dinner table. | id:38368
+2010 | Kelly Reichardt | Meek's Cutoff | western | Settlers lost on the Oregon Trail in 1845, filmed in the old, almost square frame. | id:57120
+2011 | Asghar Farhadi | A Separation | realism | The first Iranian film to win the Oscar for Best Foreign Language Film, after the Golden Bear. | id:60243
+2011 | Terrence Malick | The Tree of Life | arthouse | A 1950s Texas childhood set against the birth of the universe; it won the Palme d'Or. | id:8967
+2011 | Nicolas Winding Refn | Drive | crime | Ryan Gosling as a nameless getaway driver; Refn won Best Director at Cannes. | id:64690
+2011 | Nuri Bilge Ceylan | Once Upon a Time in Anatolia | arthouse | Police search the Turkish steppe through the night for a buried body; Grand Prix at Cannes. | id:74879
+2012 | Michael Haneke | Amour | arthouse | An old Paris couple faces illness; Haneke's second Palme d'Or, three years after The White Ribbon. | id:86837
+2012 | Joshua Oppenheimer | The Act of Killing | doc | Indonesian death-squad leaders restage their 1960s killings as scenes from their favorite film genres. | id:123678
+2012 | Leos Carax | Holy Motors | arthouse | Denis Lavant rides a white limousine across Paris, playing a new role at each stop. | id:103328
+2012 | Haifaa al-Mansour | Wadjda | realism | The first feature shot entirely in Saudi Arabia, and the first by a Saudi woman director. | id:129112
+2013 | Spike Jonze | Her | romance | A lonely writer falls for his computer's AI, voiced by Scarlett Johansson; Jonze won the Oscar for its script. | id:152601
+2013 | Steve McQueen | 12 Years a Slave | epic | From Solomon Northup's 1853 memoir; the first Best Picture winner by a Black director. | id:76203
+2013 | Paolo Sorrentino | The Great Beauty | arthouse | An aging writer drifts through Rome's parties; it won the Oscar for Best Foreign Language Film. | id:179144
+2013 | Ritesh Batra | The Lunchbox | romance | A Mumbai lunchbox delivered to the wrong office starts a quiet exchange of letters. | id:191714
+2013 | Paweł Pawlikowski | Ida | arthouse | A novice nun learns she is Jewish in 1960s Poland; the first Polish film to win the foreign-language Oscar. | id:209274
+2014 | Richard Linklater | Boyhood | indie | Filmed a few days a year over 12 years with the same actors, as its young lead grew up. | id:85350
+2014 | Wes Anderson | The Grand Budapest Hotel | comedy | Uses a different frame shape for each of its three time periods. | id:120467
+2014 | Damien Chazelle | Whiplash | musical | A young jazz drummer and his bullying teacher; J.K. Simmons won the Oscar. | id:244786
+2014 | Jennifer Kent | The Babadook | horror | Jennifer Kent's debut: a widowed mother, her son and a monster from a pop-up book. | id:242224
+2014 | Abderrahmane Sissako | Timbuktu | realism | Jihadists seize Timbuktu and ban music and football; it won seven Césars, including Best Film. | id:265228
+2015 | George Miller | Mad Max: Fury Road | action | Most of its stunts were done for real in the Namibian desert; it won six Oscars. | id:76341
+2015 | László Nemes | Son of Saul | epic | Follows one Auschwitz prisoner in tight close-up; Grand Prix at Cannes and the foreign-language Oscar. | id:336050
+2015 | Todd Haynes | Carol | romance | A shop girl and a wealthy older woman fall in love in 1950s New York, from a Patricia Highsmith novel. | id:258480
+2015 | Ciro Guerra | Embrace of the Serpent | arthouse | Two scientists travel the Amazon with a shaman; the first Colombian film nominated for an Oscar. | id:336808
+2016 | Barry Jenkins | Moonlight | indie | Three chapters of a Black boy's life in Miami; the first Best Picture winner with an all-Black cast. | id:376867
+2016 | Damien Chazelle | La La Land | musical | Opens with a dance number on a closed Los Angeles freeway ramp; it won six Oscars. | id:313369
+2016 | Maren Ade | Toni Erdmann | comedy | A prankster father in fake teeth follows his busy consultant daughter to Bucharest. | id:374475
+2016 | Makoto Shinkai | Your Name. | animation | Two teenagers keep swapping bodies; it became one of Japan's highest-grossing films ever. | id:372058
+2016 | Ken Loach | I, Daniel Blake | realism | A Newcastle carpenter is lost in Britain's welfare system; Ken Loach's second Palme d'Or. | id:374473
+2017 | Jordan Peele | Get Out | horror | Jordan Peele's debut; he became the first Black writer to win the Oscar for Original Screenplay. | id:419430
+2017 | Greta Gerwig | Lady Bird | indie | Greta Gerwig's solo directing debut, set in her hometown of Sacramento in 2002. | id:391713
+2017 | Luca Guadagnino | Call Me by Your Name | romance | A summer love story in 1983 northern Italy; James Ivory won the Oscar for its script at 89. | id:398818
+2017 | Agnès Varda & JR | Faces Places | doc | Agnès Varda and the street artist JR paste giant portraits of villagers across rural France. | id:451995
+2017 | Lynne Ramsay | You Were Never Really Here | crime | Joaquin Phoenix as a hired rescuer; Cannes gave him Best Actor and Ramsay Best Screenplay. | id:398181
+2018 | Alfonso Cuarón | Roma | realism | Cuarón's black-and-white memory of a 1970s Mexico City childhood; it won the Golden Lion. | id:426426
+2018 | Hirokazu Kore-eda | Shoplifters | realism | A Tokyo family that gets by on small thefts; Kore-eda won the Palme d'Or. | id:505192
+2018 | Bob Persichetti & Peter Ramsey & Rodney Rothman | Spider-Man: Into the Spider-Verse | animation | Mixes comic-book dots and lines with computer animation; it won the Oscar for Animated Feature. | id:324857
+2018 | Ari Aster | Hereditary | horror | Ari Aster's first feature, about a family coming apart after a death, with Toni Collette. | id:493922
+2018 | Nadine Labaki | Capernaum | realism | Cast with children from the streets of Beirut; Nadine Labaki won the Jury Prize at Cannes. | id:517814
+2019 | Bong Joon-ho | Parasite | crime | The first film not in English to win Best Picture, after the Palme d'Or. | id:496243
+2019 | Céline Sciamma | Portrait of a Lady on Fire | arthouse | A painter secretly portrays a bride-to-be in 18th-century Brittany; Best Screenplay at Cannes. | id:531428
+2019 | Mati Diop | Atlantics | arthouse | Mati Diop became the first Black woman director in competition at Cannes, and won the Grand Prix. | id:496967
+2019 | Tamara Kotevska & Ljubomir Stefanov | Honeyland | doc | The first documentary nominated for both the Best Documentary and Best International Feature Oscars. | id:566213
+2019 | Anthony Russo & Joe Russo | Avengers: Endgame | action | Closed a run of 22 Marvel films and briefly passed Avatar as the highest-grossing film ever. | id:299534
+
+2020 | Chloé Zhao | Nomadland | indie | Real van-dwelling nomads play themselves; Chloé Zhao became the first woman of color to win Best Director. | id:581734
+2020 | Lee Isaac Chung | Minari | indie | A Korean family starts a farm in 1980s Arkansas; Youn Yuh-jung won the Oscar as the grandmother. | id:615643
+2020 | Tomm Moore & Ross Stewart | Wolfwalkers | animation | A hand-drawn Irish film about a girl and wolves in 1650 Kilkenny, from the studio Cartoon Saloon. | id:441130
+2020 | Jasmila Žbanić | Quo Vadis, Aida? | epic | A UN translator tries to save her family during the 1995 Srebrenica massacre. | id:728118
+2021 | Ryusuke Hamaguchi | Drive My Car | arthouse | Three hours from a Haruki Murakami story; the first Japanese film nominated for Best Picture. | id:758866
+2021 | Julia Ducournau | Titane | horror | Julia Ducournau became the second woman to win the Palme d'Or, and the first to win it alone. | id:630240
+2021 | Jane Campion | The Power of the Dog | western | New Zealand stands in for 1920s Montana; Jane Campion won the Oscar for Best Director. | id:600583
+2021 | Joachim Trier | The Worst Person in the World | romance | An Oslo woman's search for her place, told in twelve chapters, a prologue and an epilogue. | id:660120
+2021 | Questlove | Summer of Soul (...Or, When the Revolution Could Not Be Televised) | musical | Footage of the 1969 Harlem Cultural Festival sat unseen in a basement for 50 years. | id:776527
+2022 | Daniel Kwan & Daniel Scheinert | Everything Everywhere All at Once | scifi | Won seven Oscars, and Michelle Yeoh became the first Asian woman to win Best Actress. | id:545611
+2022 | Charlotte Wells | Aftersun | indie | Charlotte Wells's debut: a girl's Turkish holiday with her young father, recalled through camcorder footage. | id:965150
+2022 | S. S. Rajamouli | RRR | action | Its song Naatu Naatu was the first from an Indian film to win the Oscar for Best Original Song. | id:579974
+2022 | Joseph Kosinski | Top Gun: Maverick | action | The actors filmed their own cockpit scenes in real Navy fighter jets; it grossed nearly $1.5 billion. | id:361743
+2022 | Carla Simón | Alcarràs | realism | A Catalan family's last summer on their peach farm; it won the Golden Bear. | id:804251
+2023 | Greta Gerwig | Barbie | comedy | The year's top grosser, making Greta Gerwig the first solo woman director to pass $1 billion. | id:346698
+2023 | Christopher Nolan | Oppenheimer | epic | Shot partly on new black-and-white IMAX film; it won seven Oscars, including Best Picture. | id:872585
+2023 | Justine Triet | Anatomy of a Fall | crime | Justine Triet became the third woman to win the Palme d'Or, with a courtroom drama set in the Alps. | id:915935
+2023 | Celine Song | Past Lives | indie | Childhood friends from Seoul meet again in New York 24 years later; Celine Song's first film. | id:666277
+2023 | Jonathan Glazer | The Zone of Interest | epic | The Auschwitz commandant's family lives next to the camp, whose horror is heard but rarely seen. | id:467244
+2024 | Sean Baker | Anora | comedy | Won the Palme d'Or and Best Picture; Sean Baker took home four Oscars himself in one night. | id:1064213
+2024 | Gints Zilbalodis | Flow | animation | A cat survives a great flood with no dialogue; made with free Blender software, it won Latvia's first Oscar. | id:823219
+2024 | Coralie Fargeat | The Substance | horror | Demi Moore as a fading TV star who tries a black-market drug; Best Screenplay at Cannes. | id:933260
+2024 | Denis Villeneuve | Dune: Part Two | scifi | Finishes Villeneuve's take on Frank Herbert's first Dune novel, shot in the deserts of Jordan and Abu Dhabi. | id:693134
+2024 | Payal Kapadia | All We Imagine as Light | arthouse | Two nurses in Mumbai; the first Indian film in the Cannes competition in 30 years, it won the Grand Prix. | id:927547
+2025 | Ryan Coogler | Sinners | horror | Michael B. Jordan plays twin brothers who open a juke joint in 1932 Mississippi. | id:1233413
+2025 | Paul Thomas Anderson | One Battle After Another | action | Leonardo DiCaprio as a burned-out former revolutionary, loosely drawn from Thomas Pynchon's Vineland. | id:1054867
+2025 | Jafar Panahi | It Was Just an Accident | realism | Made without official permission in Iran, it won Jafar Panahi the Palme d'Or. | id:1456349
+2025 | Maggie Kang & Chris Appelhans | KPop Demon Hunters | animation | Became Netflix's most-watched film, and its song Golden reached number one on the Billboard Hot 100. | id:803796
+2025 | Jiaozi | Ne Zha 2 | animation | Became the highest-grossing animated film ever, with most of its ticket sales in China. | id:980477
+2026 | Phil Lord & Christopher Miller | Project Hail Mary | scifi | Ryan Gosling as a science teacher who wakes up alone on a spaceship, from Andy Weir's novel. | id:687163
