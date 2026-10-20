@@ -4,9 +4,8 @@
     python3 scripts/seed_redis.py [--env-file .env.local]
 
 Reads KV_REST_API_URL and KV_REST_API_TOKEN (Upstash REST) from the environment or from the env file, which
-`vercel env pull .env.local` fills once the store is connected. Catalog films are added or updated, with their
-TMDB recommendations for the galaxy. Films that left catalog.txt are removed. Films that came in through
-suggestions are left alone.
+`vercel env pull .env.local` fills once the store is connected. Catalog films are added or updated. Films that
+left catalog.txt are removed. Films that came in through suggestions are left alone.
 """
 import json
 import sys
@@ -19,7 +18,6 @@ from build_data import OUTPUT, env_values  # noqa: E402
 
 FILMS = "retroreel:films"
 TMDB_IDS = "retroreel:tmdb-ids"
-RELATED = "retroreel:related"
 CATALOG_IDS = "retroreel:catalog-ids"
 
 
@@ -61,9 +59,6 @@ def main():
         batch = films[start:start + 50]
         commands.append(["HSET", FILMS, *[part for film in batch for part in (film["id"], json.dumps(film, ensure_ascii=False))]])
     commands.append(["SADD", TMDB_IDS, *[str(film["tmdb"]["id"]) for film in films if film["tmdb"]]])
-    related = list(data["related"].items())
-    for start in range(0, len(related), 100):
-        commands.append(["HSET", RELATED, *[part for key, tmdb_ids in related[start:start + 100] for part in (key, json.dumps(tmdb_ids))]])
     commands.append(["DEL", CATALOG_IDS])
     commands.append(["SADD", CATALOG_IDS, *sorted(ids)])
     pipeline(url, token, commands)

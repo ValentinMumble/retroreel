@@ -1496,7 +1496,7 @@ button.explore-item:hover {
   opacity: 0.12;
 }
 
-/* Views: timeline or galaxy */
+/* Views: timeline, directors, map and river */
 
 .view-switch {
   display: inline-flex;
@@ -1529,143 +1529,7 @@ button.explore-item:hover {
   display: none;
 }
 
-/* Galaxy */
-
-.galaxy {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 55%);
-  cursor: grab;
-  touch-action: none;
-}
-
-.galaxy:active {
-  cursor: grabbing;
-}
-
-.galaxy-sky,
-.galaxy-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.galaxy-sky {
-  pointer-events: none;
-}
-
-.galaxy-sky circle {
-  fill: var(--ink);
-}
-
-.galaxy-rings circle {
-  fill: none;
-  stroke: var(--line);
-  stroke-width: 1;
-  stroke-dasharray: 2 6;
-  vector-effect: non-scaling-stroke;
-}
-
-.galaxy-rings text {
-  fill: var(--faint);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-anchor: middle;
-}
-
-.galaxy-link {
-  stroke: var(--ink);
-  opacity: 0.13;
-  vector-effect: non-scaling-stroke;
-  transition: opacity 0.25s;
-}
-
-.galaxy-link.is-director {
-  stroke: var(--accent);
-  opacity: 0.25;
-  stroke-dasharray: 3 3;
-}
-
-.galaxy-link.is-faded {
-  opacity: 0.03;
-}
-
-.galaxy-link.is-active {
-  stroke: var(--accent);
-  opacity: 0.85;
-}
-
-.galaxy-star {
-  cursor: pointer;
-  transition: opacity 0.25s;
-}
-
-.galaxy-frame {
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-}
-
-.galaxy-star image {
-  pointer-events: none;
-}
-
-.galaxy-star:hover .galaxy-frame {
-  stroke: var(--ink);
-  stroke-width: 2.5;
-}
-
-.galaxy-star.is-seen .galaxy-frame {
-  stroke: var(--lb-green);
-  stroke-width: 2;
-}
-
-/* An outline rather than a glow: a filter on every liked film makes panning stutter. */
-.galaxy-star.is-liked .galaxy-frame {
-  stroke: var(--lb-orange);
-  stroke-width: 3;
-}
-
-.galaxy-heart {
-  pointer-events: none;
-}
-
-.galaxy-heart circle {
-  fill: var(--lb-orange);
-}
-
-.galaxy-heart text {
-  fill: #fff;
-  font-size: 7px;
-  text-anchor: middle;
-  dominant-baseline: central;
-}
-
-.galaxy-star.is-selected .galaxy-frame {
-  stroke: var(--accent);
-  stroke-width: 3;
-}
-
-.galaxy-star.is-faded {
-  opacity: 0.14;
-}
-
-.galaxy-label {
-  fill: var(--ink);
-  font-family: var(--font-body);
-  font-size: 10px;
-  text-anchor: middle;
-  paint-order: stroke;
-  stroke: var(--bg);
-  stroke-width: 3px;
-  pointer-events: none;
-}
-
-.galaxy-tooltip {
+.view-tooltip {
   position: absolute;
   z-index: 5;
   display: flex;
@@ -1681,53 +1545,20 @@ button.explore-item:hover {
   pointer-events: none;
 }
 
-.galaxy-tooltip img {
+.view-tooltip img {
   flex: none;
   width: 34px;
   height: 51px;
   border-radius: 3px;
 }
 
-.galaxy-tooltip b {
+.view-tooltip b {
   display: block;
 }
 
-.galaxy-tooltip span span {
+.view-tooltip span span {
   font-size: 12px;
   color: var(--muted);
-}
-
-.galaxy-hint {
-  position: absolute;
-  right: 20px;
-  bottom: 14px;
-  left: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  pointer-events: none;
-}
-
-.galaxy-hint p {
-  max-width: 560px;
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--faint);
-}
-
-.galaxy-hint .toggle {
-  flex: none;
-  pointer-events: auto;
-}
-
-.galaxy-hint .toggle[aria-pressed='true'] {
-  border-color: var(--lb-green);
-  color: var(--lb-green);
-}
-
-.galaxy-hint p {
-  margin-right: auto;
 }
 
 /* Touch screens: bigger targets, swipe hint instead of keys */
@@ -2388,10 +2219,6 @@ p.lb-status {
   margin-top: 0;
 }
 
-.galaxy-star.is-personal .galaxy-frame {
-  stroke-dasharray: 3 2;
-}
-
 /* Overview strip with many films in a year: each bar shows its scenes' shares, scaled to the busiest year */
 
 .minimap-bar.is-stacked {
@@ -2423,4 +2250,495 @@ p.lb-status {
 
 .toggle.seen-toggle[aria-pressed='true'] span {
   color: #0b0b0b;
+}
+
+/* Directors, map and river: the views next to the timeline */
+
+.directors-view,
+.map-view,
+.river-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.view-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 2px 20px 10px;
+}
+
+.view-toolbar p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.view-toolbar strong {
+  color: var(--ink);
+}
+
+.view-loading,
+.view-empty {
+  margin: 24px 20px;
+  color: var(--muted);
+}
+
+/* Directors: one row per career */
+
+.directors-scroll {
+  --name-w: 200px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin-bottom: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.directors-grid {
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.directors-axis {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: 28px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.directors-axis .director-name {
+  height: 28px;
+}
+
+.directors-decade {
+  position: absolute;
+  top: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.director-row {
+  position: relative;
+  display: flex;
+  height: 56px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 50%, transparent);
+}
+
+.director-name {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: var(--name-w);
+  padding: 0 12px 0 20px;
+  border-right: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.director-row:hover,
+.director-row:hover .director-name {
+  background: var(--bg-raised);
+}
+
+.director-label {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.director-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.director-track {
+  position: relative;
+  flex: 1;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--line) 60%, transparent) 0 1px,
+    transparent 1px calc(var(--year-w) * 10)
+  );
+}
+
+.director-career {
+  position: absolute;
+  top: 27px;
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.director-film {
+  position: absolute;
+  width: 24px;
+  height: 36px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--scene) 55%, var(--bg-raised));
+  box-shadow:
+    0 4px 10px -4px var(--shadow),
+    0 0 0 1px var(--edge);
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--ease),
+    opacity 0.3s;
+}
+
+.director-film img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.director-film::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: var(--scene);
+}
+
+.director-film:hover,
+.director-film:focus-visible {
+  z-index: 4;
+  outline: none;
+  transform: scale(1.7);
+}
+
+.director-film.is-seen {
+  box-shadow: 0 0 0 1.5px var(--lb-green);
+}
+
+.director-film.is-liked {
+  box-shadow: 0 0 0 1.5px var(--lb-orange);
+}
+
+.director-film.is-personal {
+  outline: 1px dashed color-mix(in srgb, var(--lb-green) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.director-film.is-selected {
+  z-index: 3;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.director-film.is-dimmed {
+  opacity: 0.15;
+}
+
+/* Map: where the films come from */
+
+.map-periods {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.map-play {
+  flex: none;
+}
+
+.chip-decade {
+  --scene: var(--accent);
+}
+
+.chip-decade::before {
+  display: none;
+}
+
+.map-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 20px 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%);
+  cursor: grab;
+  touch-action: none;
+}
+
+.map-stage:active {
+  cursor: grabbing;
+}
+
+.map-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-sphere {
+  fill: color-mix(in srgb, var(--bg-raised) 35%, transparent);
+  stroke: var(--line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-land {
+  fill: var(--bg-raised);
+}
+
+.map-borders {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-bubble {
+  fill: currentColor;
+  fill-opacity: 0.72;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition:
+    r 0.5s var(--ease),
+    fill-opacity 0.2s;
+}
+
+.map-bubble:hover {
+  fill-opacity: 0.95;
+}
+
+.map-bubble.is-seen {
+  stroke: var(--lb-green);
+  stroke-width: 2.5;
+}
+
+.map-bubble.is-picked {
+  fill-opacity: 0.95;
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.map-decade {
+  position: absolute;
+  bottom: 8px;
+  left: 20px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 10vh, 110px);
+  line-height: 1;
+  color: var(--ink);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.map-card {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 4;
+  width: min(320px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--scene);
+  border-radius: 12px;
+  background: var(--bg-panel);
+  box-shadow: 0 20px 40px -20px var(--shadow);
+  cursor: default;
+}
+
+.map-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.map-card h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.map-films {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+  gap: 8px;
+  margin: 10px 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.map-film {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.map-film img,
+.map-film .result-blank {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+.map-film.is-seen img {
+  outline: 1.5px solid var(--lb-green);
+  outline-offset: 1px;
+}
+
+.map-film.is-selected img {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.map-film-year {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-align: center;
+  color: var(--faint);
+}
+
+.map-card .go {
+  margin-top: 0;
+}
+
+.map-elsewhere {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* River: scenes over time */
+
+.river-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 8px 10px;
+}
+
+.river-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.river-band {
+  fill-opacity: 0.88;
+  stroke: var(--bg);
+  stroke-width: 0.6;
+  cursor: pointer;
+  transition: fill-opacity 0.2s;
+}
+
+.river-band.is-faded {
+  fill-opacity: 0.22;
+}
+
+.river-labels text {
+  fill: var(--on-scene);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.river-decades line {
+  stroke: var(--line);
+  stroke-dasharray: 2 5;
+}
+
+.river-decades text {
+  fill: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.river-eras rect {
+  fill-opacity: 0.22;
+}
+
+.river-eras text {
+  fill: var(--muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.river-rule {
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.river-tooltip {
+  max-width: 260px;
+}
+
+/* Four views: names only on wide screens, the icons always */
+
+@media (max-width: 1400px) {
+  .view-label {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .directors-scroll {
+    --name-w: 120px;
+  }
+
+  .director-name {
+    padding-left: 12px;
+  }
+
+  .view-toolbar,
+  .map-stage {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .map-stage {
+    margin: 0 16px 12px;
+    padding: 0;
+  }
 }

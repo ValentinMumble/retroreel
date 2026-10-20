@@ -15,9 +15,9 @@ export function GET(request: Request) {
   return handle(async () => {
     requireOwner(request)
     const pending = (await redis().hgetall<Record<string, Suggestion>>(PENDING)) ?? {}
-    const suggestions = Object.values(pending)
-      .map(({ related: _related, ...suggestion }) => suggestion)
-      .sort((first, second) => first.suggestedAt.localeCompare(second.suggestedAt))
+    const suggestions = Object.values(pending).sort((first, second) =>
+      first.suggestedAt.localeCompare(second.suggestedAt),
+    )
     return json({ suggestions })
   })
 }
@@ -51,8 +51,8 @@ export function POST(request: Request) {
     const scene = SCENE_KEYS.includes(body.scene as SceneKey) ? (body.scene as SceneKey) : suggestion.scene
     const year = cleanYear(body.year) ?? suggestion.year
     const note = body.note === undefined ? suggestion.note : cleanNote(body.note)
-    const { suggestedAt: _suggestedAt, related, ...film } = suggestion
+    const { suggestedAt: _suggestedAt, ...film } = suggestion
     const date = year === suggestion.year ? suggestion.date : String(year)
-    return json({ status: 'published', film: await publish({ ...film, scene, year, date, note }, related) })
+    return json({ status: 'published', film: await publish({ ...film, scene, year, date, note }) })
   })
 }

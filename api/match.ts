@@ -33,7 +33,7 @@ async function lookUp(item: Wanted): Promise<Cached> {
   try {
     const tmdbId = item.tmdbId ?? (await findMovie(item.title, item.year))?.tmdbId
     if (!tmdbId) return NOT_FOUND
-    return (await buildFilm(tmdbId, { note: '', year: item.year })).film
+    return await buildFilm(tmdbId, { note: '', year: item.year })
   } catch {
     return NOT_FOUND
   }

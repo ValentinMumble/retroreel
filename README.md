@@ -8,6 +8,15 @@ trailer and explore the films around it.
 You can filter by scene, by country and by name, and, once you connect Letterboxd, see which films you have seen,
 rated, liked or put on your watchlist.
 
+Three more views show the same films (with the same filters) another way:
+
+- **Directors**: one row per director with two films or more, their posters placed by year, so careers and
+  generations show at a glance. Sorted by first film or by number of films.
+- **Map**: one bubble per country, sized by its number of films and colored by its main scene, for all time or
+  decade by decade (Play steps through them). A country lists its films and can filter the timeline.
+- **River**: films per scene over time, as a stream under the eras. A click on a band shows that scene on the
+  timeline, around that year.
+
 ## Letterboxd
 
 Letterboxd has no open API: access is by application only, and Letterboxd does not grant it to personal projects.
@@ -42,7 +51,7 @@ after the owner removes it.
 - The films live in a Redis store (Upstash, connected to the Vercel project) under `retroreel:*` keys. The page
   loads them from `GET /api/films`, which the CDN caches for five minutes.
 - Film data, posters, trailers and recommendations come from [TMDB](https://www.themoviedb.org), the database
-  Letterboxd itself uses. The Explore section of a film and the galaxy links use TMDB's recommendations.
+  Letterboxd itself uses. The Explore section of a film uses TMDB's recommendations.
 - Anyone can suggest a film: search TMDB, pick the film, add an optional note. The server fetches the poster,
   trailer, director and country, and picks a scene from TMDB's genres and keywords. Suggestions wait for review.
 - The site owner opens the site once as `/#owner=<OWNER_KEY>`. The key stays in that browser, a Review button

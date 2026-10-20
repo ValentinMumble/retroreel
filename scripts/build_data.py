@@ -86,7 +86,7 @@ class Tmdb:
         return answer
 
     def details(self, tmdb_id):
-        return self.get(f"movie/{tmdb_id}", {"append_to_response": "credits,videos,recommendations,similar"},
+        return self.get(f"movie/{tmdb_id}", {"append_to_response": "credits,videos"},
                         cache_name=f"movie-{tmdb_id}")
 
     def search(self, title, year):
@@ -143,11 +143,6 @@ def trailer_key(details):
     return best["key"] if best and best.get("type") in ("Trailer", "Teaser") else None
 
 
-def related_ids(details):
-    recommended = details.get("recommendations", {}).get("results", [])
-    return [movie["id"] for movie in (recommended or details.get("similar", {}).get("results", []))][:20]
-
-
 def build(entry, details):
     release = details.get("release_date") or ""
     year = entry["year"]
@@ -181,7 +176,7 @@ def main():
         raise SystemExit("Set TMDB_API_KEY (https://www.themoviedb.org/settings/api), or add it to .env.local")
     tmdb = Tmdb(credential)
     entries = parse_catalog()
-    films, related, missing, other_director = [], {}, [], []
+    films, missing, other_director = [], [], []
     for number, entry in enumerate(entries, start=1):
         details = tmdb.details(int(entry["extras"]["id"])) if "id" in entry["extras"] else find(tmdb, entry)
         if not details:
@@ -194,11 +189,10 @@ def main():
         if any(other["id"] == film["id"] for other in films):
             film["id"] = f"{film['id']}-{details['id']}"
         films.append(film)
-        related[str(details["id"])] = related_ids(details)
         if number % 50 == 0:
             print(f"  {number}/{len(entries)}", flush=True)
     OUTPUT.parent.mkdir(exist_ok=True)
-    OUTPUT.write_text(json.dumps({"films": films, "related": related}, ensure_ascii=False, indent=1))
+    OUTPUT.write_text(json.dumps({"films": films}, ensure_ascii=False, indent=1))
     print(f"built {len(films)} films into {OUTPUT.relative_to(HERE.parent)}")
     without = lambda key: [film["title"] for film in films if not film["tmdb"][key]]
     print(f"no poster: {', '.join(without('poster')) or '-'}")

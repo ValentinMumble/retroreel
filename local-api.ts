@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import type { IncomingMessage } from 'node:http'
 import { loadEnv, type Plugin, type ViteDevServer } from 'vite'
-import { galaxyLinks } from './api/_lib/links.ts'
 import type { Film, SceneKey } from './src/types.ts'
 
 /**
@@ -44,10 +43,10 @@ function catalogFilms(root: string): Film[] {
     })
 }
 
-function localData(root: string): { films: Film[]; related: Record<string, number[]> } {
+function localData(root: string): { films: Film[] } {
   const built = `${root}/scripts/.cache/films.json`
   if (existsSync(built)) return JSON.parse(readFileSync(built, 'utf8'))
-  return { films: catalogFilms(root), related: {} }
+  return { films: catalogFilms(root) }
 }
 
 async function readBody(request: IncomingMessage) {
@@ -59,9 +58,8 @@ async function readBody(request: IncomingMessage) {
 async function route(server: ViteDevServer, request: IncomingMessage, url: URL): Promise<Response> {
   const name = url.pathname.slice('/api/'.length).replace(/\/$/, '')
   const root = server.config.root
-  if (!process.env.KV_REST_API_URL && (name === 'films' || name === 'galaxy')) {
-    const { films, related } = localData(root)
-    return Response.json(name === 'films' ? { films } : galaxyLinks(films, related))
+  if (!process.env.KV_REST_API_URL && name === 'films') {
+    return Response.json({ films: localData(root).films })
   }
   if (!/^[a-z-]+$/.test(name) || !existsSync(`${root}/api/${name}.ts`)) {
     return Response.json({ error: 'No such route' }, { status: 404 })

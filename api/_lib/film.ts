@@ -2,11 +2,11 @@ import type { Film } from '../../src/types'
 import { HttpError } from './http.js'
 import { normalize, slug } from './names.js'
 import { detectScene } from './scene.js'
-import { FILMS, PENDING, RELATED, redis, TMDB_IDS } from './store.js'
-import { movieDetails, relatedIds, releaseYear, trailerKey } from './tmdb.js'
+import { FILMS, PENDING, redis, TMDB_IDS } from './store.js'
+import { movieDetails, releaseYear, trailerKey } from './tmdb.js'
 
 /** Builds a timeline film from TMDB: poster, trailer, directors, country, and a scene from genres and keywords. */
-export async function buildFilm(tmdbId: number, options: { note: string; year: number | null }) {
+export async function buildFilm(tmdbId: number, options: { note: string; year: number | null }): Promise<Film> {
   const details = await movieDetails(tmdbId)
   const released = releaseYear(details)
   const year = options.year ?? released
@@ -35,11 +35,11 @@ export async function buildFilm(tmdbId: number, options: { note: string; year: n
       trailer: trailerKey(details),
     },
   }
-  return { film, related: relatedIds(details) }
+  return film
 }
 
 /** Puts a film on the timeline (and takes it out of the review queue). */
-export async function publish(film: Film, related: number[] | undefined) {
+export async function publish(film: Film) {
   const store = redis()
   const taken = await store.hget<Film>(FILMS, film.id)
   // Same title and year as another film: keep both apart by TMDB id.
@@ -49,7 +49,6 @@ export async function publish(film: Film, related: number[] | undefined) {
     const key = String(stored.tmdb.id)
     await store.sadd(TMDB_IDS, key)
     await store.hdel(PENDING, key)
-    if (related) await store.hset(RELATED, { [key]: related.slice(0, 20) })
   }
   return stored
 }

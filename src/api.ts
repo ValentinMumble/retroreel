@@ -70,13 +70,6 @@ export async function fetchRelated(tmdbId: number) {
   return (await request<{ films: RelatedFilm[] }>(`/api/related?id=${tmdbId}`)).films
 }
 
-/** [film id, film id, strength 0-1, kind] */
-export type GalaxyLink = [string, string, number, 'related' | 'director']
-
-export async function fetchGalaxyLinks() {
-  return (await request<{ links: GalaxyLink[] }>('/api/galaxy')).links
-}
-
 export interface FeedEntry {
   tmdbId: number
   title: string

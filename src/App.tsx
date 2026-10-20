@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { fetchFilms, fetchGalaxyLinks, fetchSuggestions, suggestFilm, syncFeed, type GalaxyLink } from './api'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { fetchFilms, fetchSuggestions, suggestFilm, syncFeed } from './api'
 import { FilmPanel } from './components/FilmPanel'
-import { Galaxy } from './components/Galaxy'
 import { LetterboxdDialog } from './components/LetterboxdDialog'
 import { ReviewDialog } from './components/ReviewDialog'
 import { SuggestDialog, type Pick } from './components/SuggestDialog'
@@ -48,6 +47,31 @@ function sortFilms(films: Film[]) {
   return [...films].sort(
     (first, second) => first.date.localeCompare(second.date) || first.title.localeCompare(second.title),
   )
+}
+
+// The other views load when first opened: the map's world shapes stay out of the timeline's download.
+const Directors = lazy(async () => ({ default: (await import('./components/Directors')).Directors }))
+const WorldMap = lazy(async () => ({ default: (await import('./components/WorldMap')).WorldMap }))
+const River = lazy(async () => ({ default: (await import('./components/River')).River }))
+
+type View = 'timeline' | 'directors' | 'map' | 'river'
+
+const VIEWS: { id: View; label: string; icon: string }[] = [
+  { id: 'timeline', label: 'Timeline', icon: '↔' },
+  { id: 'directors', label: 'Directors', icon: '☰' },
+  { id: 'map', label: 'Map', icon: '◍' },
+  { id: 'river', label: 'River', icon: '≈' },
+]
+
+const VIEW_KEY = 'retroreel.view'
+
+function storedView(): View {
+  try {
+    const saved = localStorage.getItem(VIEW_KEY)
+    return VIEWS.find((option) => option.id === saved)?.id ?? 'timeline'
+  } catch {
+    return 'timeline'
+  }
 }
 
 const LAYER_KEY = 'retroreel.layer'
@@ -100,41 +124,20 @@ export default function App() {
   /** "Light up related" from a film's Explore section: only these films stay bright. */
   const [lit, setLit] = useState<{ seedId: string; ids: ReadonlySet<string> } | null>(null)
   const [suggestPick, setSuggestPick] = useState<Pick | null>(null)
-  const [view, setView] = useState<'timeline' | 'galaxy'>(() => {
-    try {
-      return localStorage.getItem('retroreel.view') === 'galaxy' ? 'galaxy' : 'timeline'
-    } catch {
-      return 'timeline'
-    }
-  })
-  const [galaxyLinks, setGalaxyLinks] = useState<GalaxyLink[] | null>(null)
+  const [view, setView] = useState<View>(storedView)
   /** The personal layer: the visitor's other Letterboxd films on the timeline too, in this browser only. */
   const [layer, setLayer] = useState(storedLayer)
   /** Bumped after each batch of TMDB lookups, so the new films reach the timeline. */
   const [lookups, setLookups] = useState(0)
-  const [galaxyError, setGalaxyError] = useState<string | null>(null)
 
-  const changeView = (next: 'timeline' | 'galaxy') => {
+  const changeView = (next: View) => {
     setView(next)
     try {
-      localStorage.setItem('retroreel.view', next)
+      localStorage.setItem(VIEW_KEY, next)
     } catch {
       // Storage blocked: the view just won't be remembered.
     }
   }
-
-  // The galaxy's links load the first time it is shown.
-  useEffect(() => {
-    if (view !== 'galaxy' || galaxyLinks || galaxyError) return
-    const load = async () => {
-      try {
-        setGalaxyLinks(await fetchGalaxyLinks())
-      } catch (error) {
-        setGalaxyError(error instanceof Error ? error.message : String(error))
-      }
-    }
-    void load()
-  }, [view, galaxyLinks, galaxyError])
 
   const loadFilms = useCallback(async () => {
     try {
@@ -504,6 +507,21 @@ export default function App() {
     setSelectedId(id)
     requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToFilm(id)))
   }
+  /** Back to the timeline once it is shown again (a hidden timeline has no width to scroll in). */
+  const backToTimeline = (year: number | null) => {
+    changeView('timeline')
+    if (year !== null) requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToYear(year)))
+  }
+  /** From the map: only that country's films, on the timeline. */
+  const showCountry = (code: string) => {
+    setActiveCountries(new Set([code]))
+    backToTimeline(null)
+  }
+  /** From the river: only that scene, on the timeline, around the year clicked. */
+  const showScene = (scene: SceneKey, year: number) => {
+    setActiveScenes(new Set([scene]))
+    backToTimeline(year)
+  }
   const clearFilters = () => {
     setQuery('')
     setActiveScenes(new Set())
@@ -520,7 +538,7 @@ export default function App() {
           <span className="brand-reel" aria-hidden="true" />
           Retroreel
         </button>
-        <nav className="decades" aria-label="Jump to a period" hidden={view === 'galaxy'}>
+        <nav className="decades" aria-label="Jump to a period" hidden={view !== 'timeline'}>
           {JUMPS.map((year) => (
             <button
               key={year}
@@ -556,26 +574,19 @@ export default function App() {
             Filters{activeFilterCount > 0 && <b className="count-badge">{activeFilterCount}</b>}
           </button>
           <div className="view-switch" role="group" aria-label="View">
-            <button
-              type="button"
-              aria-pressed={view === 'timeline'}
-              aria-label="Timeline"
-              title="Timeline"
-              onClick={() => changeView('timeline')}
-            >
-              <span aria-hidden="true">↔</span>
-              <span className="wide-label"> Timeline</span>
-            </button>
-            <button
-              type="button"
-              aria-pressed={view === 'galaxy'}
-              aria-label="Galaxy"
-              title="Galaxy"
-              onClick={() => changeView('galaxy')}
-            >
-              <span aria-hidden="true">✦</span>
-              <span className="wide-label"> Galaxy</span>
-            </button>
+            {VIEWS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={view === option.id}
+                aria-label={option.label}
+                title={option.label}
+                onClick={() => changeView(option.id)}
+              >
+                <span aria-hidden="true">{option.icon}</span>
+                <span className="wide-label view-label"> {option.label}</span>
+              </button>
+            ))}
           </div>
         </div>
         <div className="actions">
@@ -723,7 +734,7 @@ export default function App() {
 
       <Timeline
         ref={timelineRef}
-        hidden={view === 'galaxy'}
+        hidden={view !== 'timeline'}
         films={films}
         firstYear={years.first}
         lastYear={years.last}
@@ -832,19 +843,32 @@ export default function App() {
         }
       />
 
-      {view === 'galaxy' && (
-        <Galaxy
-          films={films}
-          links={galaxyLinks}
-          linksError={galaxyError}
-          logs={logs}
-          selectedId={selectedId}
-          lit={highlighted}
-          panelOpen={selected !== null}
-          firstYear={years.first}
-          lastYear={years.last}
-          onSelect={setSelectedId}
-        />
+      {view !== 'timeline' && (
+        <Suspense fallback={<p className="view-loading">Loading…</p>}>
+          {view === 'directors' && (
+            <Directors
+              films={films}
+              logs={logs}
+              lit={highlighted}
+              selectedId={selectedId}
+              firstYear={years.first}
+              lastYear={years.last}
+              onSelect={setSelectedId}
+            />
+          )}
+          {view === 'map' && (
+            <WorldMap
+              films={films}
+              logs={logs}
+              selectedId={selectedId}
+              firstYear={years.first}
+              lastYear={years.last}
+              onSelect={setSelectedId}
+              onShowCountry={showCountry}
+            />
+          )}
+          {view === 'river' && <River films={films} firstYear={years.first} lastYear={years.last} onPick={showScene} />}
+        </Suspense>
       )}
 
       {selected && (

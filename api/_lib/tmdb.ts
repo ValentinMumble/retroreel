@@ -54,8 +54,6 @@ export interface MovieDetails extends MovieSummary {
   credits?: { crew: { job: string; name: string }[] }
   videos?: { results: Video[] }
   keywords?: { keywords: { name: string }[] }
-  recommendations?: { results: MovieSummary[] }
-  similar?: { results: MovieSummary[] }
 }
 
 export function releaseYear(movie: MovieSummary) {
@@ -113,7 +111,7 @@ export async function movieSummary(tmdbId: number): Promise<Candidate> {
 
 export async function movieDetails(tmdbId: number): Promise<MovieDetails> {
   if (!Number.isInteger(tmdbId) || tmdbId <= 0) throw new HttpError(400, 'That is not a TMDB film id')
-  return get<MovieDetails>(`movie/${tmdbId}`, { append_to_response: 'credits,videos,keywords,recommendations,similar' })
+  return get<MovieDetails>(`movie/${tmdbId}`, { append_to_response: 'credits,videos,keywords' })
 }
 
 /** TMDB's recommendations, or its similar films when it has no recommendations (often for old films). */
@@ -134,9 +132,4 @@ export function trailerKey(details: MovieDetails) {
     (video.iso_639_1 === 'en' ? 1 : 0)
   const best = [...videos].sort((first, second) => score(second) - score(first))[0]
   return best && (best.type === 'Trailer' || best.type === 'Teaser') ? best.key : null
-}
-
-export function relatedIds(details: MovieDetails) {
-  const recommended = details.recommendations?.results ?? []
-  return (recommended.length ? recommended : (details.similar?.results ?? [])).map((movie) => movie.id)
 }

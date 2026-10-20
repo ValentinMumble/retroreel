@@ -28,7 +28,7 @@ export interface TimelineHandle {
 }
 
 interface TimelineProps {
-  /** Hidden while the galaxy shows: it stays mounted so it keeps its place. */
+  /** Hidden while another view shows: it stays mounted so it keeps its place. */
   hidden: boolean
   films: Film[]
   /** When set, only these films stay bright (light up related). */

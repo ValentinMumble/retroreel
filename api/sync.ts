@@ -38,8 +38,8 @@ async function sync(dryRun: boolean, testSince: string | null = null) {
       continue
     }
     // Letterboxd's year, like the catalog's: TMDB sometimes counts the release after the festival premiere.
-    const { film, related } = await buildFilm(entry.tmdbId, { note: cleanNote(entry.review ?? ''), year: entry.year })
-    added.push(await publish(film, related))
+    const film = await buildFilm(entry.tmdbId, { note: cleanNote(entry.review ?? ''), year: entry.year })
+    added.push(await publish(film))
     await store.sadd(SYNC_DONE, id)
   }
   return { since, added, waiting: Math.max(0, todo.length - PER_RUN) }

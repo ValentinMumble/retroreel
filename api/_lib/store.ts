@@ -8,9 +8,6 @@ export const FILMS = 'retroreel:films'
 export const TMDB_IDS = 'retroreel:tmdb-ids'
 /** Suggestions waiting for review, by TMDB id. */
 export const PENDING = 'retroreel:pending'
-/** TMDB's recommendations for each published film, as TMDB ids, best first: the galaxy links. */
-export const RELATED = 'retroreel:related'
-
 /** Films built from TMDB for visitors' Letterboxd films ("title|year" or "id:<TMDB id>|year"), each built once. */
 export const MATCHES = 'retroreel:match-films'
 /** The day the owner's feed sync started: films logged from that day on are added to the timeline. */
@@ -20,8 +17,6 @@ export const SYNC_DONE = 'retroreel:sync-done'
 
 export interface Suggestion extends Film {
   suggestedAt: string
-  /** TMDB recommendations, kept for the galaxy once the film is approved. */
-  related?: number[]
 }
 
 let client: Redis | null = null

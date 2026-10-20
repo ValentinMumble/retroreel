@@ -42,9 +42,9 @@ export function POST(request: Request) {
     if (!owner && (await store.hexists(PENDING, key))) {
       throw new HttpError(409, 'Someone already suggested this film, it is waiting for review')
     }
-    const { film, related } = await buildFilm(tmdbId, { note, year })
-    if (owner) return json({ status: 'published', film: await publish(film, related) }, { status: 201 })
-    await store.hset(PENDING, { [key]: { ...film, related, suggestedAt: new Date().toISOString() } })
+    const film = await buildFilm(tmdbId, { note, year })
+    if (owner) return json({ status: 'published', film: await publish(film) }, { status: 201 })
+    await store.hset(PENDING, { [key]: { ...film, suggestedAt: new Date().toISOString() } })
     return json({ status: 'pending', film }, { status: 201 })
   })
 }
