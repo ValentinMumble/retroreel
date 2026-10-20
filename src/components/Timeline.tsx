@@ -95,7 +95,27 @@ const Eras = memo(function Eras({ layout }: { layout: Layout }) {
   )
 })
 
+/**
+ * The year blocks near the screen (a screen and a half on each side, more ahead): only their cards are in the
+ * page, so a timeline of thousands of films scrolls as smoothly as a short one. Other years keep their width.
+ */
+function nearBlocks(layout: Layout, left: number, width: number) {
+  const start = left - width * 1.5
+  const end = left + width * 2.5
+  let from = layout.blocks.length
+  let to = -1
+  layout.blocks.forEach((block, index) => {
+    if (block.x + block.width < start || block.x > end) return
+    from = Math.min(from, index)
+    to = Math.max(to, index)
+  })
+  return { from, to }
+}
+
 interface YearBlocksProps {
+  /** Index range of the blocks whose cards are rendered. */
+  from: number
+  to: number
   layout: Layout
   lit: ReadonlySet<string> | null
   logs: LogsByFilm | null
@@ -103,7 +123,7 @@ interface YearBlocksProps {
   onSelect: (id: string) => void
 }
 
-const YearBlocks = memo(function YearBlocks({ layout, lit, logs, selectedId, onSelect }: YearBlocksProps) {
+const YearBlocks = memo(function YearBlocks({ from, to, layout, lit, logs, selectedId, onSelect }: YearBlocksProps) {
   return (
     <div className="years">
       {layout.blocks.map((block, index) => {
@@ -119,7 +139,7 @@ const YearBlocks = memo(function YearBlocks({ layout, lit, logs, selectedId, onS
             <div className="year-head">
               <span className="year-label">{block.year}</span>
             </div>
-            {block.films.length > 0 && (
+            {block.films.length > 0 && index >= from && index <= to && (
               <div className="year-grid">
                 {block.films.map((film) => (
                   <FilmCard
@@ -298,8 +318,13 @@ export function Timeline({
         if (block) scrollerRef.current?.scrollTo({ left: block.x - metrics.gapX, behavior: scrollBehavior() })
       },
       scrollToFilm(id, smooth = true) {
-        const card = scrollerRef.current?.querySelector(`[data-film="${CSS.escape(id)}"]`)
-        card?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: scrollBehavior(smooth) })
+        // Worked out from the layout: the card may not be in the page yet (only years near the screen are).
+        const scroller = scrollerRef.current
+        const block = layout.blocks.find((candidate) => candidate.films.some((film) => film.id === id))
+        if (!scroller || !block) return
+        const column = Math.floor(block.films.findIndex((film) => film.id === id) / metrics.rows)
+        const center = block.x + metrics.gapX / 2 + column * (metrics.cardWidth + metrics.gapX) + metrics.cardWidth / 2
+        scroller.scrollTo({ left: center - scroller.clientWidth / 2, behavior: scrollBehavior(smooth) })
       },
       step(direction, page = false) {
         const scroller = scrollerRef.current
@@ -322,6 +347,8 @@ export function Timeline({
     [layout],
   )
 
+  const near = nearBlocks(layout, scrollLeft, viewport.width)
+
   const style = cssVars({
     '--card-w': `${metrics.cardWidth}px`,
     '--card-h': `${metrics.cardHeight}px`,
@@ -342,7 +369,15 @@ export function Timeline({
             {intro}
             {films.length === 0 && <div className="empty">{empty}</div>}
           </div>
-          <YearBlocks layout={layout} lit={lit} logs={logs} selectedId={selectedId} onSelect={onSelect} />
+          <YearBlocks
+            from={near.from}
+            to={near.to}
+            layout={layout}
+            lit={lit}
+            logs={logs}
+            selectedId={selectedId}
+            onSelect={onSelect}
+          />
           <div className="outro" style={{ width: layout.outroWidth }}>
             {outro}
           </div>

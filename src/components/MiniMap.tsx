@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { memo, useRef } from 'react'
 import type { Layout, YearBlock } from '../layout'
 import type { LogsByFilm } from '../logs'
 import { SCENE_ORDER, SCENES } from '../scenes'
@@ -26,9 +26,15 @@ interface Share {
   dimmed: boolean
 }
 
-export function MiniMap({ layout, lit, logs, scrollLeft, viewportWidth, onSeek }: MiniMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef(false)
+interface StripProps {
+  layout: Layout
+  lit: ReadonlySet<string> | null
+  logs: LogsByFilm | null
+  viewportWidth: number
+}
+
+/** The bars and the decade labels: drawn again when the films or filters change, not on every scroll frame. */
+const Strip = memo(function Strip({ layout, lit, logs, viewportWidth }: StripProps) {
   const percent = (value: number) => `${(value / layout.total) * 100}%`
   const filled = layout.blocks.filter((block) => block.films.length > 0)
   const busiest = Math.max(1, ...filled.map((block) => block.films.length))
@@ -66,31 +72,8 @@ export function MiniMap({ layout, lit, logs, scrollLeft, viewportWidth, onSeek }
       return !previous || block.x - previous.x >= minGap ? [...kept, block] : kept
     }, [])
 
-  const seekTo = (clientX: number) => {
-    const rect = mapRef.current?.getBoundingClientRect()
-    if (rect) onSeek(Math.min(1, Math.max(0, (clientX - rect.left) / rect.width)))
-  }
-
   return (
-    <div
-      ref={mapRef}
-      className="minimap"
-      aria-hidden="true"
-      onPointerDown={(event) => {
-        dragging.current = true
-        event.currentTarget.setPointerCapture(event.pointerId)
-        seekTo(event.clientX)
-      }}
-      onPointerMove={(event) => {
-        if (dragging.current) seekTo(event.clientX)
-      }}
-      onPointerUp={() => {
-        dragging.current = false
-      }}
-      onPointerCancel={() => {
-        dragging.current = false
-      }}
-    >
+    <>
       <div className="minimap-bars">
         {filled.map((block) =>
           stacked ? (
@@ -136,6 +119,41 @@ export function MiniMap({ layout, lit, logs, scrollLeft, viewportWidth, onSeek }
           </span>
         ))}
       </div>
+    </>
+  )
+})
+
+export function MiniMap({ layout, lit, logs, scrollLeft, viewportWidth, onSeek }: MiniMapProps) {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const dragging = useRef(false)
+  const percent = (value: number) => `${(value / layout.total) * 100}%`
+
+  const seekTo = (clientX: number) => {
+    const rect = mapRef.current?.getBoundingClientRect()
+    if (rect) onSeek(Math.min(1, Math.max(0, (clientX - rect.left) / rect.width)))
+  }
+
+  return (
+    <div
+      ref={mapRef}
+      className="minimap"
+      aria-hidden="true"
+      onPointerDown={(event) => {
+        dragging.current = true
+        event.currentTarget.setPointerCapture(event.pointerId)
+        seekTo(event.clientX)
+      }}
+      onPointerMove={(event) => {
+        if (dragging.current) seekTo(event.clientX)
+      }}
+      onPointerUp={() => {
+        dragging.current = false
+      }}
+      onPointerCancel={() => {
+        dragging.current = false
+      }}
+    >
+      <Strip layout={layout} lit={lit} logs={logs} viewportWidth={viewportWidth} />
       <div
         className="minimap-window"
         style={{ left: percent(scrollLeft), width: `max(1.2%, ${percent(viewportWidth)})` }}

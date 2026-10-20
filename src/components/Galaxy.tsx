@@ -9,7 +9,16 @@ import {
 } from 'd3-force'
 import { select } from 'd3-selection'
 import { zoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from 'd3-zoom'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import type { GalaxyLink } from '../api'
 import { poster } from '../images'
 import type { LogsByFilm } from '../logs'
@@ -60,6 +69,105 @@ function seeded(text: string) {
   }
   return (hash >>> 0) / 4294967296
 }
+
+interface StarsProps {
+  stars: Star[]
+  selectedId: string | null
+  /** The selected film and the films linked to it. */
+  neighbours: ReadonlySet<string> | null
+  lit: ReadonlySet<string> | null
+  highlightSeen: boolean
+  logs: LogsByFilm | null
+  onSelect: (id: string) => void
+  onHover: (star: Star, event: ReactPointerEvent) => void
+  onLeave: (star: Star) => void
+}
+
+/**
+ * The posters. Hovering a film changes only the label and the links drawn above them, so this layer is not drawn
+ * again for it: with a personal layer it holds well over a thousand films.
+ */
+const Stars = memo(function Stars({
+  stars,
+  selectedId,
+  neighbours,
+  lit,
+  highlightSeen,
+  logs,
+  onSelect,
+  onHover,
+  onLeave,
+}: StarsProps) {
+  const faded = (id: string) => {
+    if (neighbours) return !neighbours.has(id)
+    if (lit) return !lit.has(id)
+    if (highlightSeen && logs) return !logs.get(id)?.watched
+    return false
+  }
+  return (
+    <g className="galaxy-stars">
+      {stars.map((star) => {
+        const { film } = star
+        const width = star.size
+        const height = star.size * 1.5
+        // Sharp posters for the selected film and its neighbours, light thumbnails for the rest.
+        const sharp = neighbours?.has(film.id) ?? false
+        const cover = poster(film.tmdb?.poster, sharp ? 'w185' : 'w92')
+        const log = logs?.get(film.id)
+        const classes = [
+          'galaxy-star',
+          film.id === selectedId ? 'is-selected' : '',
+          faded(film.id) ? 'is-faded' : '',
+          log?.watched ? 'is-seen' : '',
+          log?.liked ? 'is-liked' : '',
+          film.personal ? 'is-personal' : '',
+        ]
+        return (
+          <g
+            key={film.id}
+            className={classes.filter(Boolean).join(' ')}
+            transform={`translate(${star.x} ${star.y})`}
+            style={{ color: SCENES[film.scene].color }}
+            onClick={() => onSelect(film.id)}
+            onPointerEnter={(event) => onHover(star, event)}
+            onPointerLeave={() => onLeave(star)}
+          >
+            <rect
+              className="galaxy-frame"
+              x={-width / 2}
+              y={-height / 2}
+              width={width}
+              height={height}
+              rx={width * 0.08}
+            />
+            {cover && (
+              <image
+                href={cover}
+                x={-width / 2}
+                y={-height / 2}
+                width={width}
+                height={height}
+                preserveAspectRatio="xMidYMid slice"
+                clipPath="url(#galaxy-poster)"
+              />
+            )}
+            {log?.liked && (
+              <g className="galaxy-heart" transform={`translate(${width / 2 - 1} ${-height / 2 + 1})`}>
+                <circle r={Math.max(4.5, width * 0.24)} />
+                <text>♥</text>
+              </g>
+            )}
+            {neighbours?.has(film.id) && (
+              <text className="galaxy-label" x={0} y={height / 2 + 12}>
+                {film.title}
+              </text>
+            )}
+          </g>
+        )
+      })}
+    </g>
+  )
+})
 
 export function Galaxy({
   films,
@@ -247,7 +355,11 @@ export function Galaxy({
     if (highlightSeen && logs) return !logs.get(id)?.watched
     return false
   }
-  const labelled = (id: string) => Boolean(neighbours?.has(id)) || hover?.star.film.id === id
+  const showHover = useCallback((star: Star, event: ReactPointerEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (rect) setHover({ star, x: event.clientX - rect.left, y: event.clientY - rect.top })
+  }, [])
+  const hideHover = useCallback((star: Star) => setHover((current) => (current?.star === star ? null : current)), [])
 
   return (
     <div ref={containerRef} className="galaxy">
@@ -300,70 +412,22 @@ export function Galaxy({
               )
             })}
           </g>
-          <g className="galaxy-stars">
-            {layout.stars.map((star) => {
-              const { film } = star
-              const width = star.size
-              const height = star.size * 1.5
-              // Sharp posters for the selected film and its neighbours, light thumbnails for the rest.
-              const sharp = neighbours?.has(film.id) ?? false
-              const cover = poster(film.tmdb?.poster, sharp ? 'w185' : 'w92')
-              const log = logs?.get(film.id)
-              const classes = [
-                'galaxy-star',
-                film.id === selectedId ? 'is-selected' : '',
-                faded(film.id) ? 'is-faded' : '',
-                log?.watched ? 'is-seen' : '',
-                log?.liked ? 'is-liked' : '',
-                film.personal ? 'is-personal' : '',
-              ]
-              return (
-                <g
-                  key={film.id}
-                  className={classes.filter(Boolean).join(' ')}
-                  transform={`translate(${star.x} ${star.y})`}
-                  style={{ color: SCENES[film.scene].color }}
-                  onClick={() => onSelect(film.id)}
-                  onPointerEnter={(event) => {
-                    const rect = containerRef.current?.getBoundingClientRect()
-                    if (rect) setHover({ star, x: event.clientX - rect.left, y: event.clientY - rect.top })
-                  }}
-                  onPointerLeave={() => setHover((current) => (current?.star === star ? null : current))}
-                >
-                  <rect
-                    className="galaxy-frame"
-                    x={-width / 2}
-                    y={-height / 2}
-                    width={width}
-                    height={height}
-                    rx={width * 0.08}
-                  />
-                  {cover && (
-                    <image
-                      href={cover}
-                      x={-width / 2}
-                      y={-height / 2}
-                      width={width}
-                      height={height}
-                      preserveAspectRatio="xMidYMid slice"
-                      clipPath="url(#galaxy-poster)"
-                    />
-                  )}
-                  {log?.liked && (
-                    <g className="galaxy-heart" transform={`translate(${width / 2 - 1} ${-height / 2 + 1})`}>
-                      <circle r={Math.max(4.5, width * 0.24)} />
-                      <text>♥</text>
-                    </g>
-                  )}
-                  {labelled(film.id) && (
-                    <text className="galaxy-label" x={0} y={height / 2 + 12}>
-                      {film.title}
-                    </text>
-                  )}
-                </g>
-              )
-            })}
-          </g>
+          <Stars
+            stars={layout.stars}
+            selectedId={selectedId}
+            neighbours={neighbours}
+            lit={lit}
+            highlightSeen={highlightSeen}
+            logs={logs}
+            onSelect={onSelect}
+            onHover={showHover}
+            onLeave={hideHover}
+          />
+          {hover && !neighbours?.has(hover.star.film.id) && (
+            <text className="galaxy-label" x={hover.star.x} y={(hover.star.y ?? 0) + hover.star.size * 0.75 + 12}>
+              {hover.star.film.title}
+            </text>
+          )}
         </g>
       </svg>
 
