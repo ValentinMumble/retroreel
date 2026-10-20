@@ -85,10 +85,10 @@ export function matchLogs(films: Film[], data: LetterboxdData): LogsByFilm {
 }
 
 /**
- * The visitor's watched films that are not on the timeline, each once: an export entry and a feed entry of the
- * same film (same TMDB id, or same title and year) are merged.
+ * The visitor's watched films that are not on the timeline, and with `watchlist` their watchlist films too, each
+ * once: an export entry and a feed entry of the same film (same TMDB id, or same title and year) are merged.
  */
-export function missingFilms(films: Film[], data: LetterboxdData): LetterboxdFilm[] {
+export function missingFilms(films: Film[], data: LetterboxdData, { watchlist = false } = {}): LetterboxdFilm[] {
   const find = finder(films)
   const missing: LetterboxdFilm[] = []
   const byId = new Map<number, LetterboxdFilm>()
@@ -109,7 +109,7 @@ export function missingFilms(films: Film[], data: LetterboxdData): LetterboxdFil
     if (film.tmdbId !== null) byId.set(film.tmdbId, film)
     byTitle.set(titleKey, film)
   }
-  return missing.filter((film) => film.watched)
+  return missing.filter((film) => film.watched || (watchlist && film.watchlist))
 }
 
 /** "★★★★½" for 4.5. */

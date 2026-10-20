@@ -33,7 +33,7 @@ interface GalaxyProps {
 
 interface Star extends SimulationNodeDatum {
   film: Film
-  /** Width of the poster disc, in galaxy units. */
+  /** Width of the poster, in galaxy units: posters are 2:3, so 1.5 times as high. */
   size: number
 }
 
@@ -98,7 +98,7 @@ export function Galaxy({
       const radius = ringRadius(film.year, firstYear)
       return {
         film,
-        size: 24 + Math.min(12, Math.sqrt(degree.get(film.id) ?? 0) * 3),
+        size: 16 + Math.min(8, Math.sqrt(degree.get(film.id) ?? 0) * 2.4),
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
       }
@@ -116,13 +116,17 @@ export function Galaxy({
       .force('radial', forceRadial<Star>((star) => ringRadius(star.film.year, firstYear)).strength(0.55))
       .force(
         'collide',
-        forceCollide<Star>((star) => star.size / 2 + 3),
+        // Between half the width and half the height of the poster: tall posters may overlap a little sideways.
+        forceCollide<Star>((star) => star.size * 0.7 + 2),
       )
       .stop()
     // Distance from the centre is time: after each step, put every film back on its year's ring (with a little
     // play so posters can make room). Relations then only move films around the circle, never across years.
     const play = RING_STEP * 0.4
-    for (let tick = 0; tick < 300; tick += 1) {
+    // Fewer steps when there are many films (the personal layer adds hundreds), so the layout stays well under a
+    // second: the ring clamp below keeps the shape, and collisions settle in a few dozen steps.
+    const ticks = Math.round(Math.min(300, 140000 / Math.max(stars.length, 1)))
+    for (let tick = 0; tick < ticks; tick += 1) {
       simulation.tick()
       for (const star of stars) {
         const ring = ringRadius(star.film.year, firstYear)
@@ -260,8 +264,8 @@ export function Galaxy({
         onPointerLeave={() => setHover(null)}
       >
         <defs>
-          <clipPath id="galaxy-disc" clipPathUnits="objectBoundingBox">
-            <circle cx={0.5} cy={0.5} r={0.5} />
+          <clipPath id="galaxy-poster" clipPathUnits="objectBoundingBox">
+            <rect width={1} height={1} rx={0.08} ry={0.053} />
           </clipPath>
         </defs>
         <g ref={sceneRef}>
@@ -299,7 +303,8 @@ export function Galaxy({
           <g className="galaxy-stars">
             {layout.stars.map((star) => {
               const { film } = star
-              const half = star.size / 2
+              const width = star.size
+              const height = star.size * 1.5
               // Sharp posters for the selected film and its neighbours, light thumbnails for the rest.
               const sharp = neighbours?.has(film.id) ?? false
               const cover = poster(film.tmdb?.poster, sharp ? 'w185' : 'w92')
@@ -310,6 +315,7 @@ export function Galaxy({
                 faded(film.id) ? 'is-faded' : '',
                 log?.watched ? 'is-seen' : '',
                 log?.liked ? 'is-liked' : '',
+                film.personal ? 'is-personal' : '',
               ]
               return (
                 <g
@@ -324,26 +330,33 @@ export function Galaxy({
                   }}
                   onPointerLeave={() => setHover((current) => (current?.star === star ? null : current))}
                 >
-                  <circle className="galaxy-frame" r={half} />
+                  <rect
+                    className="galaxy-frame"
+                    x={-width / 2}
+                    y={-height / 2}
+                    width={width}
+                    height={height}
+                    rx={width * 0.08}
+                  />
                   {cover && (
                     <image
                       href={cover}
-                      x={-half}
-                      y={-half}
-                      width={star.size}
-                      height={star.size}
+                      x={-width / 2}
+                      y={-height / 2}
+                      width={width}
+                      height={height}
                       preserveAspectRatio="xMidYMid slice"
-                      clipPath="url(#galaxy-disc)"
+                      clipPath="url(#galaxy-poster)"
                     />
                   )}
                   {log?.liked && (
-                    <g className="galaxy-heart" transform={`translate(${half * 0.72} ${-half * 0.72})`}>
-                      <circle r={Math.max(4.5, star.size * 0.2)} />
+                    <g className="galaxy-heart" transform={`translate(${width / 2 - 1} ${-height / 2 + 1})`}>
+                      <circle r={Math.max(4.5, width * 0.24)} />
                       <text>♥</text>
                     </g>
                   )}
                   {labelled(film.id) && (
-                    <text className="galaxy-label" x={0} y={half + 12}>
+                    <text className="galaxy-label" x={0} y={height / 2 + 12}>
                       {film.title}
                     </text>
                   )}

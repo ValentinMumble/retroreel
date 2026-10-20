@@ -25,7 +25,7 @@ export const FilmCard = memo(function FilmCard({ film, log, selected, dimmed, on
   return (
     <button
       type="button"
-      className={`card${selected ? ' is-selected' : ''}${dimmed ? ' is-dimmed' : ''}`}
+      className={`card${selected ? ' is-selected' : ''}${dimmed ? ' is-dimmed' : ''}${film.personal ? ' is-personal' : ''}`}
       data-film={film.id}
       style={cssVars({ '--scene': SCENES[film.scene].color })}
       onClick={() => onSelect(film.id)}

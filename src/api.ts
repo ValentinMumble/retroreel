@@ -92,8 +92,8 @@ export function fetchLetterboxdFeed(username: string) {
   )
 }
 
-/** The TMDB film of a Letterboxd film, with its timeline status. */
-export interface MatchedFilm extends RelatedFilm {
+/** The film built from TMDB for a Letterboxd film, with its timeline status. */
+export interface MatchedFilm extends Film {
   status: 'published' | 'pending' | null
 }
 

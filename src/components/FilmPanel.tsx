@@ -22,6 +22,8 @@ interface FilmPanelProps {
   /** For the Explore section: every film, who is looking, and the light-up state. */
   allFilms: Film[]
   owner: boolean
+  /** For a film of the personal layer: adds it to the shared timeline (owner) or suggests it. */
+  onPromote: (film: Film) => Promise<'published' | 'pending'>
   lit: boolean
   onJump: (id: string) => void
   onSuggest: (pick: RelatedFilm) => void
@@ -80,6 +82,7 @@ export function FilmPanel({
   onFilterCountry,
   allFilms,
   owner,
+  onPromote,
   lit,
   onJump,
   onSuggest,
@@ -94,6 +97,25 @@ export function FilmPanel({
   const tmdb = film.tmdb
   // The trailer loads only when asked for: YouTube is heavy, and opening a film should stay instant.
   const [playing, setPlaying] = useState<string | null>(null)
+  /** The answer to "add it to the timeline", for the film it was asked for. */
+  const [promotion, setPromotion] = useState<{ id: string; text: string } | null>(null)
+  const promotionText = promotion?.id === film.id ? promotion.text : null
+
+  const promote = async () => {
+    setPromotion({ id: film.id, text: 'busy' })
+    try {
+      const status = await onPromote(film)
+      setPromotion({
+        id: film.id,
+        text:
+          status === 'published'
+            ? 'It is on the timeline for everyone now.'
+            : 'Suggested: it joins the timeline once reviewed.',
+      })
+    } catch (problem) {
+      setPromotion({ id: film.id, text: problem instanceof Error ? problem.message : String(problem) })
+    }
+  }
   const still = backdrop(tmdb?.backdrop)
 
   useEffect(() => {
@@ -194,6 +216,23 @@ export function FilmPanel({
 
         {log && <LogBox log={log} />}
         {log === null && <p className="panel-unseen">Not in your Letterboxd films yet.</p>}
+
+        {film.personal && (
+          <div className="panel-personal">
+            <p>One of your Letterboxd films: it is on your timeline only, in this browser.</p>
+            {promotionText && promotionText !== 'busy' ? (
+              <p className="field-hint">{promotionText}</p>
+            ) : (
+              <button type="button" className="go" disabled={promotionText === 'busy'} onClick={() => void promote()}>
+                {promotionText === 'busy'
+                  ? 'Adding…'
+                  : owner
+                    ? 'Add it to the timeline'
+                    : 'Suggest it for the timeline'}
+              </button>
+            )}
+          </div>
+        )}
 
         {(still || tmdb?.trailer) && (
           <div className="trailer">

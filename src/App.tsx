@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { fetchFilms, fetchGalaxyLinks, fetchSuggestions, syncFeed, type GalaxyLink } from './api'
+import { fetchFilms, fetchGalaxyLinks, fetchSuggestions, suggestFilm, syncFeed, type GalaxyLink } from './api'
 import { FilmPanel } from './components/FilmPanel'
 import { Galaxy } from './components/Galaxy'
 import { LetterboxdDialog } from './components/LetterboxdDialog'
@@ -9,7 +9,8 @@ import { ThemePicker } from './components/ThemePicker'
 import { Timeline, type TimelineHandle } from './components/Timeline'
 import { countryName, flag } from './countries'
 import { fetchFeed, loadLetterboxd, saveLetterboxd, type LetterboxdData } from './letterboxd'
-import { matchLogs } from './logs'
+import { matchLogs, missingFilms, type FilmLog } from './logs'
+import { forgetFilms, lookUpFilms, personalFilms } from './personal'
 import { forgetOwnerKey, ownerKey } from './owner'
 import { SCENES, SCENE_ORDER } from './scenes'
 import { cssVars } from './style'
@@ -20,9 +21,9 @@ const JUMPS = [1900, 1920, 1940, 1960, 1980, 2000, 2020]
 const FIRST_YEAR = 1900
 const CURRENT_YEAR = new Date().getFullYear()
 
-type Mine = 'all' | 'seen' | 'unseen' | 'liked' | 'watchlist'
+type Mine = 'seen' | 'unseen' | 'liked' | 'watchlist'
 
-const MINE_LABELS: Record<Exclude<Mine, 'all'>, string> = {
+const MINE_LABELS: Record<Mine, string> = {
   seen: 'Seen',
   unseen: 'Not seen yet',
   liked: 'Liked',
@@ -49,6 +50,17 @@ function sortFilms(films: Film[]) {
   )
 }
 
+const LAYER_KEY = 'retroreel.layer'
+const NO_LAYER = { films: [] as Film[], logs: new Map<string, FilmLog>(), pending: 0 }
+
+function storedLayer() {
+  try {
+    return localStorage.getItem(LAYER_KEY) === 'on'
+  } catch {
+    return false
+  }
+}
+
 function possessive(name: string) {
   return name.endsWith('s') ? `${name}'` : `${name}'s`
 }
@@ -59,7 +71,8 @@ export default function App() {
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [query, setQuery] = useState('')
   const [activeScenes, setActiveScenes] = useState<ReadonlySet<SceneKey>>(new Set())
-  const [mine, setMine] = useState<Mine>('all')
+  /** The "your films" filters that are on: a film shows when it matches any of them, like scenes. */
+  const [mine, setMine] = useState<ReadonlySet<Mine>>(new Set())
   const [activeCountries, setActiveCountries] = useState<ReadonlySet<string>>(new Set())
   const [selectedId, setSelectedId] = useState<string | null>(
     () => decodeURIComponent(window.location.hash.slice(1)) || null,
@@ -83,6 +96,10 @@ export default function App() {
     }
   })
   const [galaxyLinks, setGalaxyLinks] = useState<GalaxyLink[] | null>(null)
+  /** The personal layer: the visitor's other Letterboxd films on the timeline too, in this browser only. */
+  const [layer, setLayer] = useState(storedLayer)
+  /** Bumped after each batch of TMDB lookups, so the new films reach the timeline. */
+  const [lookups, setLookups] = useState(0)
   const [galaxyError, setGalaxyError] = useState<string | null>(null)
 
   const changeView = (next: 'timeline' | 'galaxy') => {
@@ -151,8 +168,22 @@ export default function App() {
   const changeLetterboxd = useCallback((data: LetterboxdData | null) => {
     saveLetterboxd(data)
     setLetterboxd(data)
-    if (!data) setMine('all')
+    if (!data) {
+      forgetFilms()
+      setMine(new Set())
+    }
   }, [])
+
+  const toggleLayer = () => {
+    setLayer((current) => {
+      try {
+        localStorage.setItem(LAYER_KEY, current ? 'off' : 'on')
+      } catch {
+        // Storage blocked: the choice just won't be remembered.
+      }
+      return !current
+    })
+  }
 
   // The RSS feed brings the films logged since the last visit.
   useEffect(() => {
@@ -181,15 +212,69 @@ export default function App() {
     }
   }, [])
 
-  const logs = useMemo(
-    () => (letterboxd && allFilms.length ? matchLogs(allFilms, letterboxd) : null),
+  // The visitor's films that are not in the catalog, seen or on the watchlist: the personal layer.
+  const missing = useMemo(
+    () => (letterboxd && allFilms.length ? missingFilms(allFilms, letterboxd, { watchlist: true }) : []),
     [allFilms, letterboxd],
   )
+
+  // The visitor's other films: the seen ones with the layer on or when seen or liked films are picked, the
+  // watchlist ones only when the watchlist is picked.
+  const otherSeenShown = layer || mine.has('seen') || mine.has('liked')
+  const otherWatchlistShown = mine.has('watchlist')
+  const personalShown = otherSeenShown || otherWatchlistShown
+
+  // The films not looked up yet come from TMDB, 40 at a time, each batch shown as it arrives.
+  useEffect(() => {
+    if (!personalShown || missing.length === 0) return
+    let cancelled = false
+    const run = async () => {
+      try {
+        await lookUpFilms(
+          missing,
+          () => setLookups((current) => current + 1),
+          () => cancelled,
+        )
+      } catch (error) {
+        if (!cancelled) setFeedError(`Your films: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+    void run()
+    return () => {
+      cancelled = true
+    }
+  }, [personalShown, missing])
+
+  const personal = useMemo(() => {
+    void lookups // A new batch of looked-up films: build the layer again.
+    if (!personalShown) return NO_LAYER
+    const built = personalFilms(missing, allFilms)
+    const shown = (film: Film) => {
+      const log = built.logs.get(film.id)
+      return log?.watched ? otherSeenShown : otherWatchlistShown
+    }
+    return { ...built, films: built.films.filter(shown) }
+  }, [personalShown, otherSeenShown, otherWatchlistShown, missing, allFilms, lookups])
+
+  /** The visitor's other seen films: the ones "My other films" adds. */
+  const otherSeen = useMemo(() => missing.filter((film) => film.watched), [missing])
+
+  const timelineFilms = useMemo(
+    () => (personal.films.length ? sortFilms([...allFilms, ...personal.films]) : allFilms),
+    [allFilms, personal],
+  )
+
+  const logs = useMemo(() => {
+    if (!letterboxd || !allFilms.length) return null
+    const matched = new Map(matchLogs(allFilms, letterboxd))
+    for (const [id, log] of personal.logs) matched.set(id, log)
+    return matched
+  }, [allFilms, letterboxd, personal])
 
   const mineCounts = useMemo(() => {
     const counts = { seen: 0, unseen: 0, liked: 0, watchlist: 0 }
     if (!logs) return counts
-    for (const film of allFilms) {
+    for (const film of timelineFilms) {
       const log = logs.get(film.id)
       if (log?.watched) counts.seen += 1
       else counts.unseen += 1
@@ -197,47 +282,60 @@ export default function App() {
       if (log?.watchlist) counts.watchlist += 1
     }
     return counts
-  }, [allFilms, logs])
+  }, [timelineFilms, logs])
+
+  /** Films each "your films" filter shows: seen and liked count the other films too, even before they are looked up. */
+  const mineTotal = (option: Mine) => {
+    if (option === 'seen' && !otherSeenShown) return mineCounts.seen + otherSeen.length
+    if (option === 'liked' && !otherSeenShown) return mineCounts.liked + otherSeen.filter((film) => film.liked).length
+    if (option === 'watchlist' && !otherWatchlistShown) {
+      return mineCounts.watchlist + missing.filter((film) => film.watchlist && !film.watched).length
+    }
+    return mineCounts[option]
+  }
+  const toggleMine = (option: Mine) => setMine((current) => toggled(current, option))
 
   const years = useMemo(() => {
-    const filmYears = allFilms.map((film) => film.year)
+    const filmYears = timelineFilms.map((film) => film.year)
     return {
       first: Math.min(FIRST_YEAR, ...filmYears),
       last: Math.max(CURRENT_YEAR, ...filmYears),
     }
-  }, [allFilms])
+  }, [timelineFilms])
 
   const countries = useMemo(
     () =>
       Object.entries(
-        allFilms.reduce<Record<string, number>>((counts, film) => {
+        timelineFilms.reduce<Record<string, number>>((counts, film) => {
           if (film.country) counts[film.country] = (counts[film.country] ?? 0) + 1
           return counts
         }, {}),
       )
         .map(([code, count]) => ({ code, count, name: countryName(code) }))
         .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name)),
-    [allFilms],
+    [timelineFilms],
   )
 
   const films = useMemo(() => {
     const keep = (film: Film) => {
-      if (mine === 'all' || !logs) return true
+      if (mine.size === 0 || !logs) return true
       const log = logs.get(film.id)
-      if (mine === 'seen') return Boolean(log?.watched)
-      if (mine === 'unseen') return !log?.watched
-      if (mine === 'liked') return Boolean(log?.liked)
-      return Boolean(log?.watchlist)
+      return (
+        (mine.has('seen') && Boolean(log?.watched)) ||
+        (mine.has('unseen') && !log?.watched) ||
+        (mine.has('liked') && Boolean(log?.liked)) ||
+        (mine.has('watchlist') && Boolean(log?.watchlist))
+      )
     }
-    return allFilms.filter(
+    return timelineFilms.filter(
       (film) =>
         (activeScenes.size === 0 || activeScenes.has(film.scene)) &&
         keep(film) &&
         (activeCountries.size === 0 || (film.country !== null && activeCountries.has(film.country))),
     )
-  }, [allFilms, activeScenes, mine, activeCountries, logs])
+  }, [timelineFilms, activeScenes, mine, activeCountries, logs])
 
-  const selected = allFilms.find((film) => film.id === selectedId) ?? null
+  const selected = timelineFilms.find((film) => film.id === selectedId) ?? null
   // The light-up belongs to the film that turned it on: opening another film or closing the panel ends it.
   const litIds = lit && lit.seedId === selectedId ? lit.ids : null
   // Search highlights instead of hiding: matching films stay bright, the others dim.
@@ -304,6 +402,13 @@ export default function App() {
     setAllFilms((current) => sortFilms([...current.filter((item) => item.id !== film.id), film]))
   }, [])
 
+  /** From a personal film's panel: add it to the shared timeline (owner) or suggest it (visitors). */
+  const promote = async (film: Film) => {
+    const answer = await suggestFilm({ tmdbId: film.tmdb!.id, note: '', year: film.year })
+    if (answer.status === 'published') addFilm(answer.film)
+    return answer.status
+  }
+
   useEffect(() => {
     if (loadState !== 'ready') return
     const url = selectedId ? `#${selectedId}` : window.location.pathname + window.location.search
@@ -367,8 +472,8 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [selectedId, step, litIds])
 
-  const filtered = activeScenes.size > 0 || mine !== 'all' || activeCountries.size > 0
-  const activeFilterCount = activeScenes.size + activeCountries.size + (mine !== 'all' ? 1 : 0)
+  const filtered = activeScenes.size > 0 || mine.size > 0 || activeCountries.size > 0
+  const activeFilterCount = activeScenes.size + activeCountries.size + mine.size
   const openSuggest = (pick: Pick | null = null) => {
     setSuggestPick(pick)
     setDialog('suggest')
@@ -382,7 +487,7 @@ export default function App() {
   const clearFilters = () => {
     setQuery('')
     setActiveScenes(new Set())
-    setMine('all')
+    setMine(new Set())
     setActiveCountries(new Set())
   }
   const currentJump = [...JUMPS].reverse().find((year) => year <= centerYear) ?? JUMPS[0]
@@ -469,6 +574,19 @@ export default function App() {
               Review{pendingCount > 0 && <b className="count-badge">{pendingCount}</b>}
             </button>
           )}
+          {logs && (
+            <button
+              type="button"
+              className="toggle seen-toggle"
+              aria-pressed={mine.has('seen')}
+              aria-label="Only my films"
+              title="Only the films you have seen, from your Letterboxd"
+              onClick={() => toggleMine('seen')}
+            >
+              <span aria-hidden="true">✓</span>
+              <span className="wide-label"> My films</span>
+            </button>
+          )}
           {connected ? (
             <button
               type="button"
@@ -543,22 +661,43 @@ export default function App() {
 
       {logs && (
         <div className="scenes mine" role="group" aria-label="Filter by your Letterboxd films">
-          <button type="button" className="chip chip-all" aria-pressed={mine === 'all'} onClick={() => setMine('all')}>
+          <button
+            type="button"
+            className="chip chip-all"
+            aria-pressed={mine.size === 0}
+            onClick={() => setMine(new Set())}
+          >
             All films
           </button>
-          {(Object.keys(MINE_LABELS) as Exclude<Mine, 'all'>[]).map((option) => (
+          {(Object.keys(MINE_LABELS) as Mine[]).map((option) => (
             <button
               key={option}
               type="button"
               className={`chip chip-mine is-${option}`}
-              aria-pressed={mine === option}
-              disabled={mineCounts[option] === 0}
-              onClick={() => setMine((current) => (current === option ? 'all' : option))}
+              aria-pressed={mine.has(option)}
+              disabled={mineTotal(option) === 0}
+              onClick={() => toggleMine(option)}
             >
               {MINE_LABELS[option]}
-              <span className="chip-count">{mineCounts[option]}</span>
+              <span className="chip-count">{mineTotal(option)}</span>
             </button>
           ))}
+          {otherSeen.length > 0 && (
+            <button
+              type="button"
+              className="chip chip-layer"
+              aria-pressed={layer}
+              title="Your other seen films from Letterboxd, on the timeline in this browser only"
+              onClick={toggleLayer}
+            >
+              My other films
+              <span className="chip-count">
+                {layer && personal.pending > 0
+                  ? `${missing.length - personal.pending} of ${missing.length}`
+                  : otherSeen.length}
+              </span>
+            </button>
+          )}
         </div>
       )}
 
@@ -595,6 +734,8 @@ export default function App() {
                 <span className="seen-inline">✓</span> marks the <strong>{mineCounts.seen} films</strong> you have seen
                 on Letterboxd, with your stars and <span className="heart-inline">♥</span> likes. A blue ribbon marks
                 your watchlist.
+                {personal.films.length > 0 &&
+                  ` Your ${personal.films.length} other films are on it too, in a dashed frame, for you only.`}
               </p>
             ) : (
               <p>
@@ -708,6 +849,7 @@ export default function App() {
           }}
           allFilms={allFilms}
           owner={owner}
+          onPromote={promote}
           lit={litIds !== null}
           onJump={jumpTo}
           onSuggest={openSuggest}

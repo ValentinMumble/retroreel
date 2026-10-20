@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { matchFilms, suggestFilm, type MatchedFilm } from '../api'
+import { suggestFilm } from '../api'
 import { poster } from '../images'
 import type { LetterboxdFilm } from '../letterboxd'
 import { normalize, starText } from '../logs'
+import { entryKey, knownFilm, lookUpFilms, rememberStatus } from '../personal'
 import type { Film } from '../types'
 
 interface MissingFilmsProps {
@@ -19,12 +20,6 @@ const STATUS_LABELS: Record<string, string> = {
   pending: 'Waiting for review',
   busy: 'Adding…',
 }
-// TMDB matches stay for the visit, so reopening the dialog shows them at once.
-const matchCache = new Map<string, MatchedFilm | null>()
-
-function keyOf(film: LetterboxdFilm) {
-  return film.tmdbId !== null ? `id:${film.tmdbId}` : `${film.title}|${film.year ?? ''}`
-}
 
 /** Favorites first, then by stars, likes, and the latest diary day. */
 function rank(first: LetterboxdFilm, second: LetterboxdFilm) {
@@ -40,8 +35,9 @@ function rank(first: LetterboxdFilm, second: LetterboxdFilm) {
 export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
   const [scope, setScope] = useState<'best' | 'all'>('best')
   const [count, setCount] = useState(PAGE)
-  const [matches, setMatches] = useState(() => new Map(matchCache))
-  const [statuses, setStatuses] = useState<Record<number, string>>({})
+  /** Bumped after each batch of TMDB lookups, to show the new posters. */
+  const [, setLookups] = useState(0)
+  const [statuses, setStatuses] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
 
   const best = useMemo(
@@ -52,26 +48,23 @@ export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
   const list = scope === 'best' ? best : all
   const shown = list.slice(0, count)
 
-  // Looks up on TMDB the films shown that have no match yet, 40 at a time.
+  // Looks up on TMDB the films shown that are not known yet.
   const wantedKey = shown
-    .filter((film) => !matchCache.has(keyOf(film)))
-    .map(keyOf)
+    .filter((film) => knownFilm(film) === undefined)
+    .map(entryKey)
     .join('\n')
   useEffect(() => {
     if (!wantedKey) return
     const keys = new Set(wantedKey.split('\n'))
-    const wanted = [...best, ...all].filter(
-      (film, index, every) => keys.has(keyOf(film)) && every.indexOf(film) === index,
-    )
+    const wanted = all.filter((film) => keys.has(entryKey(film)))
     let cancelled = false
     const load = async () => {
       try {
-        for (let start = 0; start < wanted.length; start += 40) {
-          const batch = wanted.slice(start, start + 40)
-          const found = await matchFilms(batch.map(({ title, year, tmdbId }) => ({ title, year, tmdbId })))
-          batch.forEach((film, index) => matchCache.set(keyOf(film), found[index]))
-          if (!cancelled) setMatches(new Map(matchCache))
-        }
+        await lookUpFilms(
+          wanted,
+          () => setLookups((current) => current + 1),
+          () => cancelled,
+        )
       } catch (problem) {
         if (!cancelled) setError(problem instanceof Error ? problem.message : String(problem))
       }
@@ -80,20 +73,19 @@ export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
     return () => {
       cancelled = true
     }
-  }, [wantedKey, best, all])
+  }, [wantedKey, all])
 
-  const add = async (film: LetterboxdFilm, match: MatchedFilm) => {
-    setStatuses((current) => ({ ...current, [match.tmdbId]: 'busy' }))
+  const add = async (film: LetterboxdFilm, tmdbId: number) => {
+    const key = entryKey(film)
+    setStatuses((current) => ({ ...current, [key]: 'busy' }))
     try {
       // Letterboxd's year, like the catalog's: TMDB sometimes counts the release after the festival premiere.
-      const answer = await suggestFilm({ tmdbId: match.tmdbId, note: '', year: film.year })
+      const answer = await suggestFilm({ tmdbId, note: '', year: film.year })
       if (answer.status === 'published') onPublished(answer.film)
-      setStatuses((current) => ({ ...current, [match.tmdbId]: answer.status }))
+      rememberStatus(film, answer.status)
+      setStatuses((current) => ({ ...current, [key]: answer.status }))
     } catch (problem) {
-      setStatuses((current) => ({
-        ...current,
-        [match.tmdbId]: problem instanceof Error ? problem.message : String(problem),
-      }))
+      setStatuses((current) => ({ ...current, [key]: problem instanceof Error ? problem.message : String(problem) }))
     }
   }
 
@@ -116,8 +108,9 @@ export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
       {error && <p className="dialog-error">{error}</p>}
       <ul className="results missing-list">
         {shown.map((film) => {
-          const match = matches.get(keyOf(film))
-          const status = match ? (statuses[match.tmdbId] ?? match.status) : null
+          const key = entryKey(film)
+          const match = knownFilm(film)
+          const status = statuses[key] ?? match?.status
           const facts = [
             film.year,
             film.favorite && 'favorite',
@@ -127,23 +120,27 @@ export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
           const otherName =
             match && (normalize(match.title) !== normalize(film.title) || (film.year && match.year !== film.year))
           return (
-            <li key={keyOf(film)} className="result missing-item">
-              {match?.poster ? <img src={poster(match.poster, 'w92')!} alt="" /> : <span className="result-blank" />}
+            <li key={key} className="result missing-item">
+              {match?.tmdb?.poster ? (
+                <img src={poster(match.tmdb.poster, 'w92')!} alt="" />
+              ) : (
+                <span className="result-blank" />
+              )}
               <span className="result-text">
                 <span className="result-title">{film.title}</span>
                 <span className="result-meta">
                   {facts.join(' · ')}
-                  {otherName && ` · TMDB: ${match.title} (${match.year ?? '?'})`}
+                  {otherName && ` · TMDB: ${match.title} (${match.year})`}
                 </span>
               </span>
               {match === undefined ? (
                 <span className="result-status">…</span>
-              ) : match === null ? (
+              ) : !match?.tmdb ? (
                 <span className="result-status">Not on TMDB</span>
               ) : status ? (
                 <span className="result-status">{STATUS_LABELS[status] ?? status}</span>
               ) : (
-                <button type="button" className="text-button add-button" onClick={() => void add(film, match)}>
+                <button type="button" className="text-button add-button" onClick={() => void add(film, match.tmdb!.id)}>
                   {owner ? 'Add' : 'Suggest'}
                 </button>
               )}

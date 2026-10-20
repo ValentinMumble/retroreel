@@ -2345,3 +2345,81 @@ p.lb-status {
   color: var(--accent);
   font-weight: 600;
 }
+
+/* The personal layer: the visitor's other Letterboxd films, in a dashed frame and without the film strip */
+
+.chip-layer {
+  --scene: var(--lb-green);
+  border-style: dashed;
+}
+
+.card.is-personal .strip {
+  display: none;
+}
+
+.card.is-personal .sleeve {
+  outline: 1.5px dashed color-mix(in srgb, var(--lb-green) 60%, transparent);
+  outline-offset: 3px;
+}
+
+.card.is-personal.is-selected .sleeve {
+  outline: 2px solid var(--ink);
+}
+
+.card.is-personal .card-title {
+  color: color-mix(in srgb, var(--ink) 80%, var(--lb-green));
+}
+
+.panel-personal {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px dashed color-mix(in srgb, var(--lb-green) 50%, transparent);
+  border-radius: 10px;
+}
+
+.panel-personal p {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.panel-personal .go {
+  margin-top: 0;
+}
+
+.galaxy-star.is-personal .galaxy-frame {
+  stroke-dasharray: 3 2;
+}
+
+/* Overview strip with many films in a year: each bar shows its scenes' shares, scaled to the busiest year */
+
+.minimap-bar.is-stacked {
+  gap: 0;
+}
+
+.minimap-bar.is-stacked .minimap-seg {
+  flex-basis: 0;
+  height: auto;
+  min-height: 1px;
+  border-radius: 0;
+}
+
+.minimap-bar.is-stacked .minimap-seg:last-child {
+  border-radius: 1px 1px 0 0;
+}
+
+/* "My films": only the films the visitor has seen */
+
+.toggle.seen-toggle span {
+  color: var(--lb-green);
+}
+
+.toggle.seen-toggle[aria-pressed='true'] {
+  border-color: var(--lb-green);
+  background: var(--lb-green);
+  color: #0b0b0b;
+}
+
+.toggle.seen-toggle[aria-pressed='true'] span {
+  color: #0b0b0b;
+}

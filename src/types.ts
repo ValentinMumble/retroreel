@@ -33,6 +33,8 @@ export interface Film {
   /** Running time in minutes. */
   runtime: number | null
   note: string
+  /** Set in the browser for a film of the visitor's personal layer: one of their films, not in the catalog. */
+  personal?: boolean
   tmdb: {
     id: number
     /** Image paths on image.tmdb.org, e.g. "/abc.jpg". */

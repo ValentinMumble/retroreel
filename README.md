@@ -27,6 +27,11 @@ The Letterboxd dialog also lists the visitor's watched films that are not on the
 top rated first, or all of them), looked up on TMDB through `POST /api/match` and cached in Redis. The owner adds
 them with one click, visitors suggest them.
 
+With "My other films" switched on, those films join the timeline too, in a dashed frame, for that visitor only:
+each is built from TMDB like a catalog film (poster, director, country, scene, trailer) and kept in Redis and in
+the browser, so only the first visit waits for the lookups. A personal film's panel offers to add it to the shared
+timeline (owner) or to suggest it.
+
 The owner's own Letterboxd feed (`OWNER_LETTERBOXD`) feeds the timeline: every film logged from the day the sync
 first ran, and not on the timeline yet, is added, with the review as its note. `/api/sync` runs once a day through
 Vercel Cron (`vercel.json`), and each time the owner opens the site. A film it added is never added again, even
