@@ -17,6 +17,9 @@ type Row = Record<SceneKey, number> & {year: number};
 /** Films are counted over five years around each year, so the bands flow instead of spiking. */
 const SMOOTHING = 2;
 const MARGIN = {top: 70, right: 24, bottom: 34, left: 24};
+/** Width of one character of a band's name (11px, bold, spaced), to keep names apart. */
+const LABEL_CHAR_WIDTH = 7;
+const LABEL_MIN_THICKNESS = 15;
 
 /** Films per scene over time, as a stream: scenes swell and fade decade by decade. */
 export function River({films, firstYear, lastYear, onPick}: RiverProps) {
@@ -66,13 +69,47 @@ export function River({films, firstYear, lastYear, onPick}: RiverProps) {
     .y1(point => y(point[1]))
     .curve(curveBasis);
 
-  /** Where to write a scene's name: its thickest year, if the band is thick enough there. */
-  const labelOf = (band: Series<Row, SceneKey>) => {
-    let best = band[0];
-    for (const point of band) if (point[1] - point[0] > best[1] - best[0]) best = point;
-    const thickness = y(best[0]) - y(best[1]);
-    return thickness >= 15 ? {x: x(best.data.year), y: (y(best[0]) + y(best[1])) / 2} : null;
+  /**
+   * Where to write each scene's name: its thickest year where the whole name stays on the river, inside the plot
+   * and clear of the names already placed. The thickest bands choose first.
+   */
+  const placeLabels = () => {
+    const thickness = (point: Series<Row, SceneKey>[number]) => y(point[0]) - y(point[1]);
+    const peak = (band: Series<Row, SceneKey>) => Math.max(...band.map(thickness));
+    const yearOf = (position: number) => firstYear + ((position - MARGIN.left) / width) * (lastYear - firstYear);
+    // The river's outer edges, year by year: past them a name would be dark text on the dark page.
+    const riverTop = series[0]?.map((_, index) => y(Math.max(...series.map(band => band[index][1])))) ?? [];
+    const riverBottom = series[0]?.map((_, index) => y(Math.min(...series.map(band => band[index][0])))) ?? [];
+    const placed: {left: number; right: number; top: number; bottom: number}[] = [];
+    const result = new Map<SceneKey, {x: number; y: number}>();
+    for (const band of [...series].sort((first, second) => peak(second) - peak(first))) {
+      const halfWidth = (SCENES[band.key].label.length * LABEL_CHAR_WIDTH) / 2 + 4;
+      const candidates = band
+        .filter(point => thickness(point) >= LABEL_MIN_THICKNESS)
+        .sort((first, second) => thickness(second) - thickness(first));
+      for (const point of candidates) {
+        const center = {x: x(point.data.year), y: (y(point[0]) + y(point[1])) / 2};
+        const box = {left: center.x - halfWidth, right: center.x + halfWidth, top: center.y - 8, bottom: center.y + 8};
+        if (box.left < MARGIN.left || box.right > MARGIN.left + width) continue;
+        const from = Math.max(0, Math.floor(yearOf(box.left)) - firstYear);
+        const to = Math.min(riverTop.length - 1, Math.ceil(yearOf(box.right)) - firstYear);
+        let offRiver = false;
+        for (let index = from; index <= to; index += 1) {
+          if (riverTop[index] > center.y - 6 || riverBottom[index] < center.y + 6) offRiver = true;
+        }
+        if (offRiver) continue;
+        const overlaps = placed.some(
+          other => box.left < other.right && other.left < box.right && box.top < other.bottom && other.top < box.bottom,
+        );
+        if (overlaps) continue;
+        placed.push(box);
+        result.set(band.key, center);
+        break;
+      }
+    }
+    return result;
   };
+  const labels = placeLabels();
 
   const yearAt = (clientX: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -154,7 +191,7 @@ export function River({films, firstYear, lastYear, onPick}: RiverProps) {
           </g>
           <g className="river-labels">
             {series.map(band => {
-              const label = labelOf(band);
+              const label = labels.get(band.key);
               return label ? (
                 <text key={band.key} x={label.x} y={label.y}>
                   {SCENES[band.key].label}
