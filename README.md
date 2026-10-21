@@ -8,6 +8,12 @@ trailer and explore the films around it.
 You can filter by scene, by country and by name, and, once you connect Letterboxd, see which films you have seen,
 rated, liked or put on your watchlist.
 
+![The timeline in the mid-1960s, with Pierrot le Fou marked as seen on Letterboxd](docs/screenshots/timeline.png)
+
+| A film's panel | On a phone |
+| --- | --- |
+| ![Pierrot le Fou's panel: its note, the day it was logged on Letterboxd, the trailer and related films](docs/screenshots/film.png) | <img src="docs/screenshots/phone.png" alt="The timeline in 1960 on a phone" width="200"> |
+
 Three more views show the same films (with the same filters) another way:
 
 - **Directors**: one row per director with two films or more, their posters placed by year, so careers and
@@ -16,6 +22,10 @@ Three more views show the same films (with the same filters) another way:
   decade by decade (Play steps through them). A country lists its films and can filter the timeline.
 - **River**: films per scene over time, as a stream under the eras. A click on a band shows that scene on the
   timeline, around that year.
+
+| Directors | Map | River |
+| --- | --- | --- |
+| ![Directors sorted by number of films, from Hitchcock and Kurosawa to Spielberg and Cameron](docs/screenshots/directors.png) | ![The map: one bubble per country, the United States and Europe the largest](docs/screenshots/map.png) | ![The river: films per scene from 1900 to today, under the eras](docs/screenshots/river.png) |
 
 ## Letterboxd
 
