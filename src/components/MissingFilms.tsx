@@ -1,25 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
-import { suggestFilm } from '../api'
-import { poster } from '../images'
-import type { LetterboxdFilm } from '../letterboxd'
-import { normalize, starText } from '../logs'
-import { entryKey, knownFilm, lookUpFilms, rememberStatus } from '../personal'
-import type { Film } from '../types'
+import {useEffect, useMemo, useState} from 'react';
+import {suggestFilm} from '../api';
+import {poster} from '../images';
+import type {LetterboxdFilm} from '../letterboxd';
+import {normalize, starText} from '../logs';
+import {entryKey, knownFilm, lookUpFilms, rememberStatus} from '../personal';
+import type {Film} from '../types';
 
 interface MissingFilmsProps {
   /** The visitor's watched films that are not on the timeline. */
-  films: LetterboxdFilm[]
+  films: LetterboxdFilm[];
   /** The site owner adds films directly; visitors suggest them. */
-  owner: boolean
-  onPublished: (film: Film) => void
+  owner: boolean;
+  onPublished: (film: Film) => void;
 }
 
-const PAGE = 30
+const PAGE = 30;
 const STATUS_LABELS: Record<string, string> = {
   published: 'On the timeline',
   pending: 'Waiting for review',
   busy: 'Adding…',
-}
+};
 
 /** Favorites first, then by stars, likes, and the latest diary day. */
 function rank(first: LetterboxdFilm, second: LetterboxdFilm) {
@@ -29,65 +29,65 @@ function rank(first: LetterboxdFilm, second: LetterboxdFilm) {
     Number(second.liked) - Number(first.liked) ||
     (second.dates[0] ?? '').localeCompare(first.dates[0] ?? '') ||
     first.title.localeCompare(second.title)
-  )
+  );
 }
 
-export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
-  const [scope, setScope] = useState<'best' | 'all'>('best')
-  const [count, setCount] = useState(PAGE)
+export function MissingFilms({films, owner, onPublished}: MissingFilmsProps) {
+  const [scope, setScope] = useState<'best' | 'all'>('best');
+  const [count, setCount] = useState(PAGE);
   /** Bumped after each batch of TMDB lookups, to show the new posters. */
-  const [, setLookups] = useState(0)
-  const [statuses, setStatuses] = useState<Record<string, string>>({})
-  const [error, setError] = useState<string | null>(null)
+  const [, setLookups] = useState(0);
+  const [statuses, setStatuses] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
 
   const best = useMemo(
-    () => films.filter((film) => film.favorite || film.liked || (film.rating ?? 0) >= 4).sort(rank),
+    () => films.filter(film => film.favorite || film.liked || (film.rating ?? 0) >= 4).sort(rank),
     [films],
-  )
-  const all = useMemo(() => [...films].sort(rank), [films])
-  const list = scope === 'best' ? best : all
-  const shown = list.slice(0, count)
+  );
+  const all = useMemo(() => [...films].sort(rank), [films]);
+  const list = scope === 'best' ? best : all;
+  const shown = list.slice(0, count);
 
   // Looks up on TMDB the films shown that are not known yet.
   const wantedKey = shown
-    .filter((film) => knownFilm(film) === undefined)
+    .filter(film => knownFilm(film) === undefined)
     .map(entryKey)
-    .join('\n')
+    .join('\n');
   useEffect(() => {
-    if (!wantedKey) return
-    const keys = new Set(wantedKey.split('\n'))
-    const wanted = all.filter((film) => keys.has(entryKey(film)))
-    let cancelled = false
+    if (!wantedKey) return;
+    const keys = new Set(wantedKey.split('\n'));
+    const wanted = all.filter(film => keys.has(entryKey(film)));
+    let cancelled = false;
     const load = async () => {
       try {
         await lookUpFilms(
           wanted,
-          () => setLookups((current) => current + 1),
+          () => setLookups(current => current + 1),
           () => cancelled,
-        )
+        );
       } catch (problem) {
-        if (!cancelled) setError(problem instanceof Error ? problem.message : String(problem))
+        if (!cancelled) setError(problem instanceof Error ? problem.message : String(problem));
       }
-    }
-    void load()
+    };
+    void load();
     return () => {
-      cancelled = true
-    }
-  }, [wantedKey, all])
+      cancelled = true;
+    };
+  }, [wantedKey, all]);
 
   const add = async (film: LetterboxdFilm, tmdbId: number) => {
-    const key = entryKey(film)
-    setStatuses((current) => ({ ...current, [key]: 'busy' }))
+    const key = entryKey(film);
+    setStatuses(current => ({...current, [key]: 'busy'}));
     try {
       // Letterboxd's year, like the catalog's: TMDB sometimes counts the release after the festival premiere.
-      const answer = await suggestFilm({ tmdbId, note: '', year: film.year })
-      if (answer.status === 'published') onPublished(answer.film)
-      rememberStatus(film, answer.status)
-      setStatuses((current) => ({ ...current, [key]: answer.status }))
+      const answer = await suggestFilm({tmdbId, note: '', year: film.year});
+      if (answer.status === 'published') onPublished(answer.film);
+      rememberStatus(film, answer.status);
+      setStatuses(current => ({...current, [key]: answer.status}));
     } catch (problem) {
-      setStatuses((current) => ({ ...current, [key]: problem instanceof Error ? problem.message : String(problem) }))
+      setStatuses(current => ({...current, [key]: problem instanceof Error ? problem.message : String(problem)}));
     }
-  }
+  };
 
   return (
     <section className="lb-step">
@@ -107,18 +107,18 @@ export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
       </div>
       {error && <p className="dialog-error">{error}</p>}
       <ul className="results missing-list">
-        {shown.map((film) => {
-          const key = entryKey(film)
-          const match = knownFilm(film)
-          const status = statuses[key] ?? match?.status
+        {shown.map(film => {
+          const key = entryKey(film);
+          const match = knownFilm(film);
+          const status = statuses[key] ?? match?.status;
           const facts = [
             film.year,
             film.favorite && 'favorite',
             film.rating && starText(film.rating),
             film.liked && '♥',
-          ].filter(Boolean)
+          ].filter(Boolean);
           const otherName =
-            match && (normalize(match.title) !== normalize(film.title) || (film.year && match.year !== film.year))
+            match && (normalize(match.title) !== normalize(film.title) || (film.year && match.year !== film.year));
           return (
             <li key={key} className="result missing-item">
               {match?.tmdb?.poster ? (
@@ -145,14 +145,14 @@ export function MissingFilms({ films, owner, onPublished }: MissingFilmsProps) {
                 </button>
               )}
             </li>
-          )
+          );
         })}
       </ul>
       {count < list.length && (
-        <button type="button" className="text-button" onClick={() => setCount((current) => current + PAGE)}>
+        <button type="button" className="text-button" onClick={() => setCount(current => current + PAGE)}>
           Show {Math.min(PAGE, list.length - count)} more
         </button>
       )}
     </section>
-  )
+  );
 }

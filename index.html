@@ -21,10 +21,10 @@
       // Apply the saved colors and fonts before the first paint, so a reload never flashes the defaults.
       // src/themes.ts keeps the options, saves the choice and loads the fonts.
       try {
-        const palette = localStorage.getItem('retroreel.palette')
-        const font = localStorage.getItem('retroreel.font')
-        if (palette && palette !== 'velvet') document.documentElement.dataset.palette = palette
-        if (font && font !== 'poster') document.documentElement.dataset.font = font
+        const palette = localStorage.getItem('retroreel.palette');
+        const font = localStorage.getItem('retroreel.font');
+        if (palette && palette !== 'velvet') document.documentElement.dataset.palette = palette;
+        if (font && font !== 'poster') document.documentElement.dataset.font = font;
       } catch {
         // Storage blocked: the defaults it is.
       }

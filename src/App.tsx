@@ -1,535 +1,536 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { fetchFilms, fetchSuggestions, suggestFilm, syncFeed } from './api'
-import { FilmPanel } from './components/FilmPanel'
-import { LetterboxdDialog } from './components/LetterboxdDialog'
-import { ReviewDialog } from './components/ReviewDialog'
-import { SuggestDialog, type Pick } from './components/SuggestDialog'
-import { ThemePicker } from './components/ThemePicker'
-import { Timeline, type TimelineHandle } from './components/Timeline'
-import { countryName, flag } from './countries'
-import { fetchFeed, loadLetterboxd, saveLetterboxd, type LetterboxdData } from './letterboxd'
-import { matchLogs, missingFilms, type FilmLog } from './logs'
-import { forgetFilms, lookUpFilms, personalFilms } from './personal'
-import { forgetOwnerKey, ownerKey } from './owner'
-import { SCENES, SCENE_ORDER } from './scenes'
-import { cssVars } from './style'
-import type { Film, SceneKey } from './types'
+import {lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {fetchFilms, fetchSuggestions, suggestFilm, syncFeed} from './api';
+import {FilmPanel} from './components/FilmPanel';
+import {LetterboxdDialog} from './components/LetterboxdDialog';
+import {ReviewDialog} from './components/ReviewDialog';
+import {SuggestDialog, type Pick} from './components/SuggestDialog';
+import {ThemePicker} from './components/ThemePicker';
+import {Timeline, type TimelineHandle} from './components/Timeline';
+import {countryName, flag} from './countries';
+import {fetchFeed, loadLetterboxd, saveLetterboxd, type LetterboxdData} from './letterboxd';
+import {matchLogs, missingFilms, type FilmLog} from './logs';
+import {forgetFilms, lookUpFilms, personalFilms} from './personal';
+import {forgetOwnerKey, ownerKey} from './owner';
+import {SCENES, SCENE_ORDER} from './scenes';
+import {cssVars} from './style';
+import type {Film, SceneKey} from './types';
 
 /** Jump buttons, every twenty years: "20s" would not say which century. */
-const JUMPS = [1900, 1920, 1940, 1960, 1980, 2000, 2020]
-const FIRST_YEAR = 1900
-const CURRENT_YEAR = new Date().getFullYear()
+const JUMPS = [1900, 1920, 1940, 1960, 1980, 2000, 2020];
+const FIRST_YEAR = 1900;
+const CURRENT_YEAR = new Date().getFullYear();
 
-type Mine = 'seen' | 'unseen' | 'liked' | 'watchlist'
+type Mine = 'seen' | 'unseen' | 'liked' | 'watchlist';
 
 const MINE_LABELS: Record<Mine, string> = {
   seen: 'Seen',
   unseen: 'Not seen yet',
   liked: 'Liked',
   watchlist: 'Watchlist',
-}
+};
 
 function fold(text: string) {
   return text
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
+    .toLowerCase();
 }
 
 function toggled<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {
-  const next = new Set(set)
-  if (next.has(value)) next.delete(value)
-  else next.add(value)
-  return next
+  const next = new Set(set);
+  if (next.has(value)) next.delete(value);
+  else next.add(value);
+  return next;
 }
 
 function sortFilms(films: Film[]) {
   return [...films].sort(
     (first, second) => first.date.localeCompare(second.date) || first.title.localeCompare(second.title),
-  )
+  );
 }
 
 // The other views load when first opened: the map's world shapes stay out of the timeline's download.
-const Directors = lazy(async () => ({ default: (await import('./components/Directors')).Directors }))
-const WorldMap = lazy(async () => ({ default: (await import('./components/WorldMap')).WorldMap }))
-const River = lazy(async () => ({ default: (await import('./components/River')).River }))
+const Directors = lazy(async () => ({default: (await import('./components/Directors')).Directors}));
+const WorldMap = lazy(async () => ({default: (await import('./components/WorldMap')).WorldMap}));
+const River = lazy(async () => ({default: (await import('./components/River')).River}));
 
-type View = 'timeline' | 'directors' | 'map' | 'river'
+type View = 'timeline' | 'directors' | 'map' | 'river';
 
-const VIEWS: { id: View; label: string; icon: string }[] = [
-  { id: 'timeline', label: 'Timeline', icon: '↔' },
-  { id: 'directors', label: 'Directors', icon: '☰' },
-  { id: 'map', label: 'Map', icon: '◍' },
-  { id: 'river', label: 'River', icon: '≈' },
-]
+const VIEWS: {id: View; label: string; icon: string}[] = [
+  {id: 'timeline', label: 'Timeline', icon: '↔'},
+  {id: 'directors', label: 'Directors', icon: '☰'},
+  {id: 'map', label: 'Map', icon: '◍'},
+  {id: 'river', label: 'River', icon: '≈'},
+];
 
-const VIEW_KEY = 'retroreel.view'
+const VIEW_KEY = 'retroreel.view';
 
 function storedView(): View {
   try {
-    const saved = localStorage.getItem(VIEW_KEY)
-    return VIEWS.find((option) => option.id === saved)?.id ?? 'timeline'
+    const saved = localStorage.getItem(VIEW_KEY);
+    return VIEWS.find(option => option.id === saved)?.id ?? 'timeline';
   } catch {
-    return 'timeline'
+    return 'timeline';
   }
 }
 
-const LAYER_KEY = 'retroreel.layer'
-const MINE_KEY = 'retroreel.mine'
-const NO_LAYER = { films: [] as Film[], logs: new Map<string, FilmLog>(), pending: 0 }
+const LAYER_KEY = 'retroreel.layer';
+const MINE_KEY = 'retroreel.mine';
+const NO_LAYER = {films: [] as Film[], logs: new Map<string, FilmLog>(), pending: 0};
 
 function storedLayer() {
   try {
-    return localStorage.getItem(LAYER_KEY) === 'on'
+    return localStorage.getItem(LAYER_KEY) === 'on';
   } catch {
-    return false
+    return false;
   }
 }
 
 /** The "your films" filters that were on at the last visit. */
 function storedMine(): ReadonlySet<Mine> {
   try {
-    const saved: unknown = JSON.parse(localStorage.getItem(MINE_KEY) ?? '[]')
-    const options = Array.isArray(saved) ? saved : []
-    return new Set(options.filter((option): option is Mine => typeof option === 'string' && option in MINE_LABELS))
+    const saved: unknown = JSON.parse(localStorage.getItem(MINE_KEY) ?? '[]');
+    const options = Array.isArray(saved) ? saved : [];
+    return new Set(options.filter((option): option is Mine => typeof option === 'string' && option in MINE_LABELS));
   } catch {
-    return new Set()
+    return new Set();
   }
 }
 
 function possessive(name: string) {
-  return name.endsWith('s') ? `${name}'` : `${name}'s`
+  return name.endsWith('s') ? `${name}'` : `${name}'s`;
 }
 
 export default function App() {
-  const timelineRef = useRef<TimelineHandle>(null)
-  const [allFilms, setAllFilms] = useState<Film[]>([])
-  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading')
-  const [query, setQuery] = useState('')
-  const [activeScenes, setActiveScenes] = useState<ReadonlySet<SceneKey>>(new Set())
+  const timelineRef = useRef<TimelineHandle>(null);
+  const [allFilms, setAllFilms] = useState<Film[]>([]);
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [query, setQuery] = useState('');
+  const [activeScenes, setActiveScenes] = useState<ReadonlySet<SceneKey>>(new Set());
   /** The "your films" filters that are on: a film shows when it matches any of them, like scenes. */
-  const [mine, setMine] = useState<ReadonlySet<Mine>>(storedMine)
-  const [activeCountries, setActiveCountries] = useState<ReadonlySet<string>>(new Set())
+  const [mine, setMine] = useState<ReadonlySet<Mine>>(storedMine);
+  const [activeCountries, setActiveCountries] = useState<ReadonlySet<string>>(new Set());
   const [selectedId, setSelectedId] = useState<string | null>(
     () => decodeURIComponent(window.location.hash.slice(1)) || null,
-  )
-  const [centerYear, setCenterYear] = useState(FIRST_YEAR)
-  const [letterboxd, setLetterboxd] = useState<LetterboxdData | null>(loadLetterboxd)
-  const [owner, setOwner] = useState(false)
-  const [pendingCount, setPendingCount] = useState(0)
-  const [feedError, setFeedError] = useState<string | null>(null)
-  const [dialog, setDialog] = useState<'suggest' | 'review' | 'letterboxd' | null>(null)
+  );
+  const [centerYear, setCenterYear] = useState(FIRST_YEAR);
+  const [letterboxd, setLetterboxd] = useState<LetterboxdData | null>(loadLetterboxd);
+  const [owner, setOwner] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [feedError, setFeedError] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<'suggest' | 'review' | 'letterboxd' | null>(null);
   /** On phones the filters fold away behind a Filters button. */
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false);
   /** "Light up related" from a film's Explore section: only these films stay bright. */
-  const [lit, setLit] = useState<{ seedId: string; ids: ReadonlySet<string> } | null>(null)
-  const [suggestPick, setSuggestPick] = useState<Pick | null>(null)
-  const [view, setView] = useState<View>(storedView)
+  const [lit, setLit] = useState<{seedId: string; ids: ReadonlySet<string>} | null>(null);
+  const [suggestPick, setSuggestPick] = useState<Pick | null>(null);
+  const [view, setView] = useState<View>(storedView);
   /** The personal layer: the visitor's other Letterboxd films on the timeline too, in this browser only. */
-  const [layer, setLayer] = useState(storedLayer)
+  const [layer, setLayer] = useState(storedLayer);
   /** Bumped after each batch of TMDB lookups, so the new films reach the timeline. */
-  const [lookups, setLookups] = useState(0)
+  const [lookups, setLookups] = useState(0);
 
   const changeView = (next: View) => {
-    setView(next)
+    setView(next);
     try {
-      localStorage.setItem(VIEW_KEY, next)
+      localStorage.setItem(VIEW_KEY, next);
     } catch {
       // Storage blocked: the view just won't be remembered.
     }
-  }
+  };
 
   const loadFilms = useCallback(async () => {
     try {
-      setAllFilms(sortFilms(await fetchFilms()))
-      setLoadState('ready')
+      setAllFilms(sortFilms(await fetchFilms()));
+      setLoadState('ready');
     } catch {
-      setLoadState('error')
+      setLoadState('error');
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     // The state changes once the fetch answers, not synchronously in the effect.
     // oxlint-disable-next-line react/set-state-in-effect
-    void loadFilms()
-  }, [loadFilms])
+    void loadFilms();
+  }, [loadFilms]);
 
   // Only the site owner may read the review queue: a refusal means the key is wrong or gone.
   useEffect(() => {
-    if (!ownerKey()) return
-    let cancelled = false
+    if (!ownerKey()) return;
+    let cancelled = false;
     const check = async () => {
       try {
-        const suggestions = await fetchSuggestions()
-        if (cancelled) return
-        setOwner(true)
-        setPendingCount(suggestions.length)
+        const suggestions = await fetchSuggestions();
+        if (cancelled) return;
+        setOwner(true);
+        setPendingCount(suggestions.length);
       } catch {
-        if (!cancelled) forgetOwnerKey()
-        return
+        if (!cancelled) forgetOwnerKey();
+        return;
       }
       // The films logged on Letterboxd since the last run go onto the timeline (the daily cron does it too).
-      const added = await syncFeed().catch(() => [])
-      if (cancelled || added.length === 0) return
-      const ids = new Set(added.map((film) => film.id))
-      setAllFilms((current) => sortFilms([...current.filter((film) => !ids.has(film.id)), ...added]))
-    }
-    void check()
+      const added = await syncFeed().catch(() => []);
+      if (cancelled || added.length === 0) return;
+      const ids = new Set(added.map(film => film.id));
+      setAllFilms(current => sortFilms([...current.filter(film => !ids.has(film.id)), ...added]));
+    };
+    void check();
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   const changeLetterboxd = useCallback((data: LetterboxdData | null) => {
-    saveLetterboxd(data)
-    setLetterboxd(data)
+    saveLetterboxd(data);
+    setLetterboxd(data);
     if (!data) {
-      forgetFilms()
-      setMine(new Set())
+      forgetFilms();
+      setMine(new Set());
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem(MINE_KEY, JSON.stringify([...mine]))
+      localStorage.setItem(MINE_KEY, JSON.stringify([...mine]));
     } catch {
       // Storage blocked: the filters just won't be remembered.
     }
-  }, [mine])
+  }, [mine]);
 
   const toggleLayer = () => {
-    setLayer((current) => {
+    setLayer(current => {
       try {
-        localStorage.setItem(LAYER_KEY, current ? 'off' : 'on')
+        localStorage.setItem(LAYER_KEY, current ? 'off' : 'on');
       } catch {
         // Storage blocked: the choice just won't be remembered.
       }
-      return !current
-    })
-  }
+      return !current;
+    });
+  };
 
   // The RSS feed brings the films logged since the last visit.
   useEffect(() => {
-    const stored = loadLetterboxd()
-    if (!stored?.username || !stored.feed) return
-    let cancelled = false
+    const stored = loadLetterboxd();
+    if (!stored?.username || !stored.feed) return;
+    let cancelled = false;
     const refresh = async () => {
       try {
-        const feed = await fetchFeed(stored.username!)
-        if (cancelled) return
+        const feed = await fetchFeed(stored.username!);
+        if (cancelled) return;
         // Merged into the latest state: the visitor may have imported or forgotten their films meanwhile.
-        setLetterboxd((current) => {
-          if (!current?.feed || current.username !== stored.username) return current
-          const next = { ...current, feed: { films: feed.films, name: feed.name, fetchedAt: new Date().toISOString() } }
-          saveLetterboxd(next)
-          return next
-        })
-        setFeedError(null)
+        setLetterboxd(current => {
+          if (!current?.feed || current.username !== stored.username) return current;
+          const next = {...current, feed: {films: feed.films, name: feed.name, fetchedAt: new Date().toISOString()}};
+          saveLetterboxd(next);
+          return next;
+        });
+        setFeedError(null);
       } catch (error) {
-        if (!cancelled) setFeedError(`Letterboxd feed: ${error instanceof Error ? error.message : String(error)}`)
+        if (!cancelled) setFeedError(`Letterboxd feed: ${error instanceof Error ? error.message : String(error)}`);
       }
-    }
-    void refresh()
+    };
+    void refresh();
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   // The visitor's films that are not in the catalog, seen or on the watchlist: the personal layer.
   const missing = useMemo(
-    () => (letterboxd && allFilms.length ? missingFilms(allFilms, letterboxd, { watchlist: true }) : []),
+    () => (letterboxd && allFilms.length ? missingFilms(allFilms, letterboxd, {watchlist: true}) : []),
     [allFilms, letterboxd],
-  )
+  );
 
   // The visitor's other films: the seen ones with the layer on or when seen or liked films are picked, the
   // watchlist ones only when the watchlist is picked.
-  const otherSeenShown = layer || mine.has('seen') || mine.has('liked')
-  const otherWatchlistShown = mine.has('watchlist')
-  const personalShown = otherSeenShown || otherWatchlistShown
+  const otherSeenShown = layer || mine.has('seen') || mine.has('liked');
+  const otherWatchlistShown = mine.has('watchlist');
+  const personalShown = otherSeenShown || otherWatchlistShown;
 
   // The films not looked up yet come from TMDB, 40 at a time, each batch shown as it arrives.
   useEffect(() => {
-    if (!personalShown || missing.length === 0) return
-    let cancelled = false
+    if (!personalShown || missing.length === 0) return;
+    let cancelled = false;
     const run = async () => {
       try {
         await lookUpFilms(
           missing,
-          () => setLookups((current) => current + 1),
+          () => setLookups(current => current + 1),
           () => cancelled,
-        )
+        );
       } catch (error) {
-        if (!cancelled) setFeedError(`Your films: ${error instanceof Error ? error.message : String(error)}`)
+        if (!cancelled) setFeedError(`Your films: ${error instanceof Error ? error.message : String(error)}`);
       }
-    }
-    void run()
+    };
+    void run();
     return () => {
-      cancelled = true
-    }
-  }, [personalShown, missing])
+      cancelled = true;
+    };
+  }, [personalShown, missing]);
 
   const personal = useMemo(() => {
-    void lookups // A new batch of looked-up films: build the layer again.
-    if (!personalShown) return NO_LAYER
-    const built = personalFilms(missing, allFilms)
+    void lookups; // A new batch of looked-up films: build the layer again.
+    if (!personalShown) return NO_LAYER;
+    const built = personalFilms(missing, allFilms);
     const shown = (film: Film) => {
-      const log = built.logs.get(film.id)
-      return log?.watched ? otherSeenShown : otherWatchlistShown
-    }
-    return { ...built, films: built.films.filter(shown) }
-  }, [personalShown, otherSeenShown, otherWatchlistShown, missing, allFilms, lookups])
+      const log = built.logs.get(film.id);
+      return log?.watched ? otherSeenShown : otherWatchlistShown;
+    };
+    return {...built, films: built.films.filter(shown)};
+  }, [personalShown, otherSeenShown, otherWatchlistShown, missing, allFilms, lookups]);
 
   /** The visitor's other seen films: the ones "My other films" adds. */
-  const otherSeen = useMemo(() => missing.filter((film) => film.watched), [missing])
+  const otherSeen = useMemo(() => missing.filter(film => film.watched), [missing]);
 
   const timelineFilms = useMemo(
     () => (personal.films.length ? sortFilms([...allFilms, ...personal.films]) : allFilms),
     [allFilms, personal],
-  )
+  );
 
   const logs = useMemo(() => {
-    if (!letterboxd || !allFilms.length) return null
-    const matched = new Map(matchLogs(allFilms, letterboxd))
-    for (const [id, log] of personal.logs) matched.set(id, log)
-    return matched
-  }, [allFilms, letterboxd, personal])
+    if (!letterboxd || !allFilms.length) return null;
+    const matched = new Map(matchLogs(allFilms, letterboxd));
+    for (const [id, log] of personal.logs) matched.set(id, log);
+    return matched;
+  }, [allFilms, letterboxd, personal]);
 
   const mineCounts = useMemo(() => {
-    const counts = { seen: 0, unseen: 0, liked: 0, watchlist: 0 }
-    if (!logs) return counts
+    const counts = {seen: 0, unseen: 0, liked: 0, watchlist: 0};
+    if (!logs) return counts;
     for (const film of timelineFilms) {
-      const log = logs.get(film.id)
-      if (log?.watched) counts.seen += 1
-      else counts.unseen += 1
-      if (log?.liked) counts.liked += 1
-      if (log?.watchlist) counts.watchlist += 1
+      const log = logs.get(film.id);
+      if (log?.watched) counts.seen += 1;
+      else counts.unseen += 1;
+      if (log?.liked) counts.liked += 1;
+      if (log?.watchlist) counts.watchlist += 1;
     }
-    return counts
-  }, [timelineFilms, logs])
+    return counts;
+  }, [timelineFilms, logs]);
 
   /** Films each "your films" filter shows: seen and liked count the other films too, even before they are looked up. */
   const mineTotal = (option: Mine) => {
-    if (option === 'seen' && !otherSeenShown) return mineCounts.seen + otherSeen.length
-    if (option === 'liked' && !otherSeenShown) return mineCounts.liked + otherSeen.filter((film) => film.liked).length
+    if (option === 'seen' && !otherSeenShown) return mineCounts.seen + otherSeen.length;
+    if (option === 'liked' && !otherSeenShown) return mineCounts.liked + otherSeen.filter(film => film.liked).length;
     if (option === 'watchlist' && !otherWatchlistShown) {
-      return mineCounts.watchlist + missing.filter((film) => film.watchlist && !film.watched).length
+      return mineCounts.watchlist + missing.filter(film => film.watchlist && !film.watched).length;
     }
-    return mineCounts[option]
-  }
-  const toggleMine = (option: Mine) => setMine((current) => toggled(current, option))
+    return mineCounts[option];
+  };
+  const toggleMine = (option: Mine) => setMine(current => toggled(current, option));
 
   const years = useMemo(() => {
-    const filmYears = timelineFilms.map((film) => film.year)
+    const filmYears = timelineFilms.map(film => film.year);
     return {
       first: Math.min(FIRST_YEAR, ...filmYears),
       last: Math.max(CURRENT_YEAR, ...filmYears),
-    }
-  }, [timelineFilms])
+    };
+  }, [timelineFilms]);
 
   const countries = useMemo(
     () =>
       Object.entries(
         timelineFilms.reduce<Record<string, number>>((counts, film) => {
-          if (film.country) counts[film.country] = (counts[film.country] ?? 0) + 1
-          return counts
+          if (film.country) counts[film.country] = (counts[film.country] ?? 0) + 1;
+          return counts;
         }, {}),
       )
-        .map(([code, count]) => ({ code, count, name: countryName(code) }))
+        .map(([code, count]) => ({code, count, name: countryName(code)}))
         .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name)),
     [timelineFilms],
-  )
+  );
 
   const films = useMemo(() => {
     const keep = (film: Film) => {
-      if (mine.size === 0 || !logs) return true
-      const log = logs.get(film.id)
+      if (mine.size === 0 || !logs) return true;
+      const log = logs.get(film.id);
       return (
         (mine.has('seen') && Boolean(log?.watched)) ||
         (mine.has('unseen') && !log?.watched) ||
         (mine.has('liked') && Boolean(log?.liked)) ||
         (mine.has('watchlist') && Boolean(log?.watchlist))
-      )
-    }
+      );
+    };
     return timelineFilms.filter(
-      (film) =>
+      film =>
         (activeScenes.size === 0 || activeScenes.has(film.scene)) &&
         keep(film) &&
         (activeCountries.size === 0 || (film.country !== null && activeCountries.has(film.country))),
-    )
-  }, [timelineFilms, activeScenes, mine, activeCountries, logs])
+    );
+  }, [timelineFilms, activeScenes, mine, activeCountries, logs]);
 
-  const selected = timelineFilms.find((film) => film.id === selectedId) ?? null
+  const selected = timelineFilms.find(film => film.id === selectedId) ?? null;
   // The light-up belongs to the film that turned it on: opening another film or closing the panel ends it.
-  const litIds = lit && lit.seedId === selectedId ? lit.ids : null
+  const litIds = lit && lit.seedId === selectedId ? lit.ids : null;
   // Search highlights instead of hiding: matching films stay bright, the others dim.
-  const needle = fold(query.trim())
+  const needle = fold(query.trim());
   const matchList = useMemo(
     () =>
       needle
-        ? films.filter((film) =>
+        ? films.filter(film =>
             fold(`${film.title} ${film.originalTitle ?? ''} ${film.directors.join(' ')}`).includes(needle),
           )
         : null,
     [films, needle],
-  )
-  const matches = useMemo(() => (matchList ? new Set(matchList.map((film) => film.id)) : null), [matchList])
-  const highlighted = litIds ?? matches
-  const firstMatchId = matchList?.[0]?.id ?? null
+  );
+  const matches = useMemo(() => (matchList ? new Set(matchList.map(film => film.id)) : null), [matchList]);
+  const highlighted = litIds ?? matches;
+  const firstMatchId = matchList?.[0]?.id ?? null;
 
   // While typing, glide the timeline to the first match.
   useEffect(() => {
-    if (!firstMatchId) return
-    const timer = window.setTimeout(() => timelineRef.current?.scrollToFilm(firstMatchId), 350)
-    return () => window.clearTimeout(timer)
-  }, [firstMatchId])
+    if (!firstMatchId) return;
+    const timer = window.setTimeout(() => timelineRef.current?.scrollToFilm(firstMatchId), 350);
+    return () => window.clearTimeout(timer);
+  }, [firstMatchId]);
 
   /** Enter in the search box opens the next match (Shift+Enter the previous one). */
   const stepMatch = (direction: 1 | -1) => {
-    if (!matchList?.length) return
-    const index = matchList.findIndex((film) => film.id === selectedId)
+    if (!matchList?.length) return;
+    const index = matchList.findIndex(film => film.id === selectedId);
     const nextIndex =
       index < 0
         ? direction === 1
           ? 0
           : matchList.length - 1
-        : (index + direction + matchList.length) % matchList.length
-    const next = matchList[nextIndex]
-    setSelectedId(next.id)
-    timelineRef.current?.scrollToFilm(next.id)
-  }
-  const selectedIndex = films.findIndex((film) => film.id === selectedId)
-  const earliest = allFilms[0]
-  const latest = allFilms[allFilms.length - 1]
+        : (index + direction + matchList.length) % matchList.length;
+    const next = matchList[nextIndex];
+    setSelectedId(next.id);
+    timelineRef.current?.scrollToFilm(next.id);
+  };
+  const selectedIndex = films.findIndex(film => film.id === selectedId);
+  const earliest = allFilms[0];
+  const latest = allFilms[allFilms.length - 1];
 
   const step = useCallback(
     (offset: 1 | -1) => {
-      const next = films[selectedIndex + offset]
-      if (selectedIndex < 0 || !next) return
-      setSelectedId(next.id)
-      timelineRef.current?.scrollToFilm(next.id)
+      const next = films[selectedIndex + offset];
+      if (selectedIndex < 0 || !next) return;
+      setSelectedId(next.id);
+      timelineRef.current?.scrollToFilm(next.id);
     },
     [films, selectedIndex],
-  )
+  );
 
-  const toggleScene = (scene: SceneKey) => setActiveScenes((current) => toggled(current, scene))
+  const toggleScene = (scene: SceneKey) => setActiveScenes(current => toggled(current, scene));
   /** From the film panel: show only that scene (or every scene again if it was the only one). */
   const only = <T,>(current: ReadonlySet<T>, value: T): ReadonlySet<T> =>
-    current.size === 1 && current.has(value) ? new Set() : new Set([value])
+    current.size === 1 && current.has(value) ? new Set() : new Set([value]);
   const keepSelectedInView = () => {
-    const id = selectedId
-    if (id) requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToFilm(id)))
-  }
-  const toggleCountry = (code: string) => setActiveCountries((current) => toggled(current, code))
+    const id = selectedId;
+    if (id) requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToFilm(id)));
+  };
+  const toggleCountry = (code: string) => setActiveCountries(current => toggled(current, code));
 
   const addFilm = useCallback((film: Film) => {
-    setAllFilms((current) => sortFilms([...current.filter((item) => item.id !== film.id), film]))
-  }, [])
+    setAllFilms(current => sortFilms([...current.filter(item => item.id !== film.id), film]));
+  }, []);
 
   /** From a personal film's panel: add it to the shared timeline (owner) or suggest it (visitors). */
   const promote = async (film: Film) => {
-    const answer = await suggestFilm({ tmdbId: film.tmdb!.id, note: '', year: film.year })
-    if (answer.status === 'published') addFilm(answer.film)
-    return answer.status
-  }
+    const answer = await suggestFilm({tmdbId: film.tmdb!.id, note: '', year: film.year});
+    if (answer.status === 'published') addFilm(answer.film);
+    return answer.status;
+  };
 
   useEffect(() => {
-    if (loadState !== 'ready') return
-    const url = selectedId ? `#${selectedId}` : window.location.pathname + window.location.search
-    window.history.replaceState(null, '', url)
-  }, [selectedId, loadState])
+    if (loadState !== 'ready') return;
+    const url = selectedId ? `#${selectedId}` : window.location.pathname + window.location.search;
+    window.history.replaceState(null, '', url);
+  }, [selectedId, loadState]);
 
   // Opened from a shared link: once the films are in, bring that film into view. An unknown id opens nothing.
-  const openedFromLink = useRef(false)
+  const openedFromLink = useRef(false);
   useEffect(() => {
-    if (loadState !== 'ready' || openedFromLink.current) return
-    openedFromLink.current = true
-    if (selectedId && allFilms.some((film) => film.id === selectedId)) {
-      requestAnimationFrame(() => timelineRef.current?.scrollToFilm(selectedId, false))
+    if (loadState !== 'ready' || openedFromLink.current) return;
+    openedFromLink.current = true;
+    if (selectedId && allFilms.some(film => film.id === selectedId)) {
+      requestAnimationFrame(() => timelineRef.current?.scrollToFilm(selectedId, false));
     }
-  }, [loadState, allFilms, selectedId])
+  }, [loadState, allFilms, selectedId]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      const target = event.target instanceof HTMLElement ? event.target : null
+      const target = event.target instanceof HTMLElement ? event.target : null;
       if (target?.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')) {
-        if (event.key === 'Escape') target.blur()
-        return
+        if (event.key === 'Escape') target.blur();
+        return;
       }
-      if (event.metaKey || event.ctrlKey || event.altKey) return
-      const timeline = timelineRef.current
-      if (!timeline) return
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const timeline = timelineRef.current;
+      if (!timeline) return;
       switch (event.key) {
         case 'Escape':
-          if (litIds) setLit(null)
-          else setSelectedId(null)
-          break
+          if (litIds) setLit(null);
+          else setSelectedId(null);
+          break;
         case 'ArrowRight':
-          if (selectedId) step(1)
-          else timeline.step(1)
-          break
+          if (selectedId) step(1);
+          else timeline.step(1);
+          break;
         case 'ArrowLeft':
-          if (selectedId) step(-1)
-          else timeline.step(-1)
-          break
+          if (selectedId) step(-1);
+          else timeline.step(-1);
+          break;
         case 'PageDown':
-          timeline.step(1, true)
-          break
+          timeline.step(1, true);
+          break;
         case 'PageUp':
-          timeline.step(-1, true)
-          break
+          timeline.step(-1, true);
+          break;
         case 'Home':
-          timeline.scrollToEdge('start')
-          break
+          timeline.scrollToEdge('start');
+          break;
         case 'End':
-          timeline.scrollToEdge('end')
-          break
+          timeline.scrollToEdge('end');
+          break;
         case '/':
-          document.querySelector<HTMLInputElement>('.topbar .search')?.focus()
-          break
+          document.querySelector<HTMLInputElement>('.topbar .search')?.focus();
+          break;
         default:
-          return
+          return;
       }
-      event.preventDefault()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [selectedId, step, litIds])
+      event.preventDefault();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedId, step, litIds]);
 
-  const filtered = activeScenes.size > 0 || mine.size > 0 || activeCountries.size > 0
-  const activeFilterCount = activeScenes.size + activeCountries.size + mine.size
+  const filtered = activeScenes.size > 0 || mine.size > 0 || activeCountries.size > 0;
+  const activeFilterCount = activeScenes.size + activeCountries.size + mine.size;
   const openSuggest = (pick: Pick | null = null) => {
-    setSuggestPick(pick)
-    setDialog('suggest')
-  }
+    setSuggestPick(pick);
+    setDialog('suggest');
+  };
   /** From Explore: open a related film, clearing filters that would hide it. */
   const jumpTo = (id: string) => {
-    if (!films.some((film) => film.id === id)) clearFilters()
-    setSelectedId(id)
-    requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToFilm(id)))
-  }
+    if (!films.some(film => film.id === id)) clearFilters();
+    setSelectedId(id);
+    requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToFilm(id)));
+  };
   /** Back to the timeline once it is shown again (a hidden timeline has no width to scroll in). */
   const backToTimeline = (year: number | null) => {
-    changeView('timeline')
-    if (year !== null) requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToYear(year)))
-  }
+    changeView('timeline');
+    if (year !== null)
+      requestAnimationFrame(() => requestAnimationFrame(() => timelineRef.current?.scrollToYear(year)));
+  };
   /** From the map: only that country's films, on the timeline. */
   const showCountry = (code: string) => {
-    setActiveCountries(new Set([code]))
-    backToTimeline(null)
-  }
+    setActiveCountries(new Set([code]));
+    backToTimeline(null);
+  };
   /** From the river: only that scene, on the timeline, around the year clicked. */
   const showScene = (scene: SceneKey, year: number) => {
-    setActiveScenes(new Set([scene]))
-    backToTimeline(year)
-  }
+    setActiveScenes(new Set([scene]));
+    backToTimeline(year);
+  };
   const clearFilters = () => {
-    setQuery('')
-    setActiveScenes(new Set())
-    setMine(new Set())
-    setActiveCountries(new Set())
-  }
-  const currentJump = [...JUMPS].reverse().find((year) => year <= centerYear) ?? JUMPS[0]
-  const connected = Boolean(letterboxd?.archive || letterboxd?.feed)
+    setQuery('');
+    setActiveScenes(new Set());
+    setMine(new Set());
+    setActiveCountries(new Set());
+  };
+  const currentJump = [...JUMPS].reverse().find(year => year <= centerYear) ?? JUMPS[0];
+  const connected = Boolean(letterboxd?.archive || letterboxd?.feed);
 
   return (
     <div className={`app${filtersOpen ? ' filters-open' : ''}`}>
@@ -539,7 +540,7 @@ export default function App() {
           Retroreel
         </button>
         <nav className="decades" aria-label="Jump to a period" hidden={view !== 'timeline'}>
-          {JUMPS.map((year) => (
+          {JUMPS.map(year => (
             <button
               key={year}
               type="button"
@@ -558,23 +559,23 @@ export default function App() {
             placeholder="Search film or director"
             aria-label="Search film or director"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return
-              event.preventDefault()
-              stepMatch(event.shiftKey ? -1 : 1)
+            onChange={event => setQuery(event.target.value)}
+            onKeyDown={event => {
+              if (event.key !== 'Enter') return;
+              event.preventDefault();
+              stepMatch(event.shiftKey ? -1 : 1);
             }}
           />
           <button
             type="button"
             className="toggle filters-button"
             aria-expanded={filtersOpen}
-            onClick={() => setFiltersOpen((open) => !open)}
+            onClick={() => setFiltersOpen(open => !open)}
           >
             Filters{activeFilterCount > 0 && <b className="count-badge">{activeFilterCount}</b>}
           </button>
           <div className="view-switch" role="group" aria-label="View">
-            {VIEWS.map((option) => (
+            {VIEWS.map(option => (
               <button
                 key={option.id}
                 type="button"
@@ -647,12 +648,12 @@ export default function App() {
         >
           All scenes
         </button>
-        {SCENE_ORDER.map((scene) => (
+        {SCENE_ORDER.map(scene => (
           <button
             key={scene}
             type="button"
             className="chip"
-            style={cssVars({ '--scene': SCENES[scene].color })}
+            style={cssVars({'--scene': SCENES[scene].color})}
             aria-pressed={activeScenes.has(scene)}
             onClick={() => toggleScene(scene)}
           >
@@ -676,7 +677,7 @@ export default function App() {
         >
           All countries
         </button>
-        {countries.map((option) => (
+        {countries.map(option => (
           <button
             key={option.code}
             type="button"
@@ -700,7 +701,7 @@ export default function App() {
           >
             All films
           </button>
-          {(Object.keys(MINE_LABELS) as Mine[]).map((option) => (
+          {(Object.keys(MINE_LABELS) as Mine[]).map(option => (
             <button
               key={option}
               type="button"
@@ -823,8 +824,8 @@ export default function App() {
                 type="button"
                 className="go"
                 onClick={() => {
-                  setLoadState('loading')
-                  void loadFilms()
+                  setLoadState('loading');
+                  void loadFilms();
                 }}
               >
                 Try again
@@ -882,14 +883,14 @@ export default function App() {
             selected.country !== null && activeCountries.size === 1 && activeCountries.has(selected.country)
           }
           onFilterScene={() => {
-            setActiveScenes((current) => only(current, selected.scene))
-            keepSelectedInView()
+            setActiveScenes(current => only(current, selected.scene));
+            keepSelectedInView();
           }}
           onFilterCountry={() => {
-            const country = selected.country
-            if (!country) return
-            setActiveCountries((current) => only(current, country))
-            keepSelectedInView()
+            const country = selected.country;
+            if (!country) return;
+            setActiveCountries(current => only(current, country));
+            keepSelectedInView();
           }}
           allFilms={allFilms}
           owner={owner}
@@ -897,7 +898,7 @@ export default function App() {
           lit={litIds !== null}
           onJump={jumpTo}
           onSuggest={openSuggest}
-          onLight={(ids) => setLit(ids ? { seedId: selected.id, ids } : null)}
+          onLight={ids => setLit(ids ? {seedId: selected.id, ids} : null)}
           onPrevious={() => step(-1)}
           onNext={() => step(1)}
           onClose={() => setSelectedId(null)}
@@ -928,5 +929,5 @@ export default function App() {
         />
       )}
     </div>
-  )
+  );
 }

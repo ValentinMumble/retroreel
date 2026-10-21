@@ -1,18 +1,18 @@
-import type { ReactNode } from 'react'
+import type {ReactNode} from 'react';
 
 interface DialogProps {
-  title: string
-  onClose: () => void
-  children: ReactNode
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
 }
 
 /** A centered modal: Escape or a click on the backdrop closes it, and keys never reach the timeline. */
-export function Dialog({ title, onClose, children }: DialogProps) {
+export function Dialog({title, onClose, children}: DialogProps) {
   return (
     <div
       className="dialog-backdrop"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose()
+      onClick={event => {
+        if (event.target === event.currentTarget) onClose();
       }}
     >
       <div
@@ -20,9 +20,9 @@ export function Dialog({ title, onClose, children }: DialogProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') onClose()
-          event.stopPropagation()
+        onKeyDown={event => {
+          if (event.key === 'Escape') onClose();
+          event.stopPropagation();
         }}
       >
         <div className="dialog-head">
@@ -34,5 +34,5 @@ export function Dialog({ title, onClose, children }: DialogProps) {
         {children}
       </div>
     </div>
-  )
+  );
 }

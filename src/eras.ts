@@ -1,12 +1,12 @@
-import type { SceneKey } from './types'
+import type {SceneKey} from './types';
 
 export interface Era {
-  label: string
-  start: number
-  end: number
-  lane: 0 | 1
-  scene: SceneKey
-  blurb: string
+  label: string;
+  start: number;
+  end: number;
+  lane: 0 | 1;
+  scene: SceneKey;
+  blurb: string;
 }
 
 /** Lane 0 is the main story, lane 1 the side currents that overlap it. Eras in one lane never overlap. */
@@ -163,4 +163,4 @@ export const ERAS: Era[] = [
     scene: 'horror',
     blurb: 'The Babadook, Get Out and Hereditary take horror to the festivals.',
   },
-]
+];

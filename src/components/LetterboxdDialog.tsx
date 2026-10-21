@@ -1,34 +1,34 @@
-import { useMemo, useRef, useState } from 'react'
-import { fetchFeed, readExport, type LetterboxdData } from '../letterboxd'
-import { missingFilms } from '../logs'
-import type { Film } from '../types'
-import { Dialog } from './Dialog'
-import { MissingFilms } from './MissingFilms'
+import {useMemo, useRef, useState} from 'react';
+import {fetchFeed, readExport, type LetterboxdData} from '../letterboxd';
+import {missingFilms} from '../logs';
+import type {Film} from '../types';
+import {Dialog} from './Dialog';
+import {MissingFilms} from './MissingFilms';
 
 interface LetterboxdDialogProps {
-  data: LetterboxdData | null
+  data: LetterboxdData | null;
   /** Films matched on the timeline, to show what the import did. */
-  seenOnTimeline: number
+  seenOnTimeline: number;
   /** Every film on the timeline, to list the visitor's films that are not on it. */
-  allFilms: Film[]
-  owner: boolean
-  onPublished: (film: Film) => void
-  onChange: (data: LetterboxdData | null) => void
-  onClose: () => void
+  allFilms: Film[];
+  owner: boolean;
+  onPublished: (film: Film) => void;
+  onChange: (data: LetterboxdData | null) => void;
+  onClose: () => void;
 }
 
-const EXPORT_PAGE = 'https://letterboxd.com/settings/data/'
+const EXPORT_PAGE = 'https://letterboxd.com/settings/data/';
 
 function formatDay(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'});
 }
 
 function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
 }
 
 function errorText(problem: unknown) {
-  return problem instanceof Error ? problem.message : String(problem)
+  return problem instanceof Error ? problem.message : String(problem);
 }
 
 export function LetterboxdDialog({
@@ -40,70 +40,70 @@ export function LetterboxdDialog({
   onChange,
   onClose,
 }: LetterboxdDialogProps) {
-  const [username, setUsername] = useState(data?.username ?? '')
-  const [busy, setBusy] = useState<'import' | 'feed' | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const folderRef = useRef<HTMLInputElement>(null)
-  const current: LetterboxdData = data ?? { username: null, archive: null, feed: null }
+  const [username, setUsername] = useState(data?.username ?? '');
+  const [busy, setBusy] = useState<'import' | 'feed' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const folderRef = useRef<HTMLInputElement>(null);
+  const current: LetterboxdData = data ?? {username: null, archive: null, feed: null};
 
   const follow = async (name: string, base: LetterboxdData) => {
-    const feed = await fetchFeed(name)
+    const feed = await fetchFeed(name);
     return {
       ...base,
       username: feed.username,
-      feed: { films: feed.films, name: feed.name, fetchedAt: new Date().toISOString() },
-    }
-  }
+      feed: {films: feed.films, name: feed.name, fetchedAt: new Date().toISOString()},
+    };
+  };
 
   const importFiles = async (files: File[]) => {
-    if (files.length === 0) return
-    setBusy('import')
-    setError(null)
+    if (files.length === 0) return;
+    setBusy('import');
+    setError(null);
     try {
-      const archive = await readExport(files)
+      const archive = await readExport(files);
       let next: LetterboxdData = {
         ...current,
         username: archive.username ?? current.username,
-        archive: { films: archive.films, exportedAt: archive.exportedAt },
-      }
-      onChange(next)
+        archive: {films: archive.films, exportedAt: archive.exportedAt},
+      };
+      onChange(next);
       // The export names its member: follow their feed too, for the films logged since.
       if (archive.username && archive.username !== current.feed?.name) {
-        setUsername(archive.username)
-        setBusy('feed')
+        setUsername(archive.username);
+        setBusy('feed');
         try {
-          next = await follow(archive.username, next)
-          onChange(next)
+          next = await follow(archive.username, next);
+          onChange(next);
         } catch (problem) {
-          setError(`Your export is in. The RSS feed could not be read: ${errorText(problem)}`)
+          setError(`Your export is in. The RSS feed could not be read: ${errorText(problem)}`);
         }
       }
     } catch (problem) {
-      setError(errorText(problem))
+      setError(errorText(problem));
     } finally {
-      setBusy(null)
-      if (fileRef.current) fileRef.current.value = ''
-      if (folderRef.current) folderRef.current.value = ''
+      setBusy(null);
+      if (fileRef.current) fileRef.current.value = '';
+      if (folderRef.current) folderRef.current.value = '';
     }
-  }
+  };
 
   const followFeed = async () => {
-    const name = username.trim().replace(/^@/, '')
-    if (!name) return
-    setBusy('feed')
-    setError(null)
+    const name = username.trim().replace(/^@/, '');
+    if (!name) return;
+    setBusy('feed');
+    setError(null);
     try {
-      onChange(await follow(name, current))
+      onChange(await follow(name, current));
     } catch (problem) {
-      setError(errorText(problem))
+      setError(errorText(problem));
     } finally {
-      setBusy(null)
+      setBusy(null);
     }
-  }
+  };
 
-  const archiveCount = current.archive?.films.filter((film) => film.watched).length ?? 0
-  const missing = useMemo(() => (data ? missingFilms(allFilms, data) : []), [allFilms, data])
+  const archiveCount = current.archive?.films.filter(film => film.watched).length ?? 0;
+  const missing = useMemo(() => (data ? missingFilms(allFilms, data) : []), [allFilms, data]);
 
   return (
     <Dialog title="Your Letterboxd films" onClose={onClose}>
@@ -128,17 +128,17 @@ export function LetterboxdDialog({
             accept=".zip,.csv"
             multiple
             hidden
-            onChange={(event) => void importFiles([...(event.target.files ?? [])])}
+            onChange={event => void importFiles([...(event.target.files ?? [])])}
           />
           <input
-            ref={(node) => {
-              folderRef.current = node
+            ref={node => {
+              folderRef.current = node;
               // Not in React's input attributes: lets the picker choose a whole folder.
-              node?.setAttribute('webkitdirectory', '')
+              node?.setAttribute('webkitdirectory', '');
             }}
             type="file"
             hidden
-            onChange={(event) => void importFiles([...(event.target.files ?? [])])}
+            onChange={event => void importFiles([...(event.target.files ?? [])])}
           />
           <button type="button" className="go" disabled={busy !== null} onClick={() => fileRef.current?.click()}>
             {busy === 'import' ? 'Reading…' : current.archive ? 'Pick a newer export' : 'Pick the ZIP file'}
@@ -164,9 +164,9 @@ export function LetterboxdDialog({
         <p>Your RSS feed adds your latest 50 diary entries, so films you log after the export show up on each visit.</p>
         <form
           className="lb-row"
-          onSubmit={(event) => {
-            event.preventDefault()
-            void followFeed()
+          onSubmit={event => {
+            event.preventDefault();
+            void followFeed();
           }}
         >
           <input
@@ -177,7 +177,7 @@ export function LetterboxdDialog({
             autoComplete="username"
             spellCheck={false}
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            onChange={event => setUsername(event.target.value)}
           />
           <button type="submit" className="go" disabled={busy !== null || !username.trim()}>
             {busy === 'feed' ? 'Reading…' : current.feed ? 'Refresh' : 'Follow'}
@@ -206,8 +206,8 @@ export function LetterboxdDialog({
             type="button"
             className="text-button"
             onClick={() => {
-              onChange(null)
-              setUsername('')
+              onChange(null);
+              setUsername('');
             }}
           >
             Forget my films
@@ -218,5 +218,5 @@ export function LetterboxdDialog({
         </button>
       </div>
     </Dialog>
-  )
+  );
 }

@@ -15,33 +15,33 @@ export type SceneKey =
   | 'musical'
   | 'animation'
   | 'indie'
-  | 'doc'
+  | 'doc';
 
 export interface Film {
   /** Title and year as a slug, e.g. "seven-samurai-1954": the address of the film in shared links. */
-  id: string
-  year: number
+  id: string;
+  year: number;
   /** "YYYY-MM-DD" when the release day is known, else "YYYY". */
-  date: string
-  title: string
+  date: string;
+  title: string;
   /** The title in the film's own language, when it differs. */
-  originalTitle: string | null
-  directors: string[]
-  scene: SceneKey
+  originalTitle: string | null;
+  directors: string[];
+  scene: SceneKey;
   /** Two-letter code of the film's country of origin, from TMDB. */
-  country: string | null
+  country: string | null;
   /** Running time in minutes. */
-  runtime: number | null
-  note: string
+  runtime: number | null;
+  note: string;
   /** Set in the browser for a film of the visitor's personal layer: one of their films, not in the catalog. */
-  personal?: boolean
+  personal?: boolean;
   tmdb: {
-    id: number
+    id: number;
     /** Image paths on image.tmdb.org, e.g. "/abc.jpg". */
-    poster: string | null
-    backdrop: string | null
-    imdbId: string | null
+    poster: string | null;
+    backdrop: string | null;
+    imdbId: string | null;
     /** YouTube video key of the trailer. */
-    trailer: string | null
-  } | null
+    trailer: string | null;
+  } | null;
 }

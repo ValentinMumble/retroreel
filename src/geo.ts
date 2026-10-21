@@ -254,4 +254,4 @@ export const COUNTRY_POINTS: Record<string, [number, number]> = {
   ZA: [22.94, -30.56],
   ZM: [27.85, -13.13],
   ZW: [29.15, -19.02],
-}
+};

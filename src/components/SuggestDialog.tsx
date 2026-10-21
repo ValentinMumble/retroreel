@@ -1,105 +1,105 @@
-import { useEffect, useRef, useState } from 'react'
-import { searchFilms, suggestFilm, type SearchResult } from '../api'
-import { countryName, flag } from '../countries'
-import { poster } from '../images'
-import { SCENES } from '../scenes'
-import type { Film } from '../types'
-import { Dialog } from './Dialog'
+import {useEffect, useRef, useState} from 'react';
+import {searchFilms, suggestFilm, type SearchResult} from '../api';
+import {countryName, flag} from '../countries';
+import {poster} from '../images';
+import {SCENES} from '../scenes';
+import type {Film} from '../types';
+import {Dialog} from './Dialog';
 
 /** A film to suggest: a search result, or a film recommended in the Explore section. */
 export interface Pick {
-  tmdbId: number
-  title: string
-  year: number | null
-  poster: string | null
+  tmdbId: number;
+  title: string;
+  year: number | null;
+  poster: string | null;
 }
 
 interface SuggestDialogProps {
   /** The site owner's suggestions go straight onto the timeline. */
-  owner: boolean
+  owner: boolean;
   /** A film picked already, e.g. from the Explore section. */
-  initialPick?: Pick | null
-  onClose: () => void
-  onPublished: (film: Film) => void
+  initialPick?: Pick | null;
+  onClose: () => void;
+  onPublished: (film: Film) => void;
 }
 
-const STATUS_LABELS = { published: 'On the timeline', pending: 'Waiting for review' }
-const MAX_YEAR = new Date().getFullYear() + 1
+const STATUS_LABELS = {published: 'On the timeline', pending: 'Waiting for review'};
+const MAX_YEAR = new Date().getFullYear() + 1;
 
-export function SuggestDialog({ owner, initialPick = null, onClose, onPublished }: SuggestDialogProps) {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [searching, setSearching] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [picked, setPicked] = useState<Pick | null>(initialPick)
-  const [year, setYear] = useState(initialPick?.year ? String(initialPick.year) : '')
-  const [note, setNote] = useState('')
-  const [sending, setSending] = useState(false)
-  const [done, setDone] = useState<{ status: 'published' | 'pending'; film: Film } | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const title = owner ? 'Add a film' : 'Suggest a film'
-
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [picked, done])
+export function SuggestDialog({owner, initialPick = null, onClose, onPublished}: SuggestDialogProps) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [picked, setPicked] = useState<Pick | null>(initialPick);
+  const [year, setYear] = useState(initialPick?.year ? String(initialPick.year) : '');
+  const [note, setNote] = useState('');
+  const [sending, setSending] = useState(false);
+  const [done, setDone] = useState<{status: 'published' | 'pending'; film: Film} | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const title = owner ? 'Add a film' : 'Suggest a film';
 
   useEffect(() => {
-    const text = query.trim()
-    if (picked || text.length < 2) return
-    let cancelled = false
+    inputRef.current?.focus();
+  }, [picked, done]);
+
+  useEffect(() => {
+    const text = query.trim();
+    if (picked || text.length < 2) return;
+    let cancelled = false;
     const timer = window.setTimeout(async () => {
-      setSearching(true)
+      setSearching(true);
       try {
-        const found = await searchFilms(text)
+        const found = await searchFilms(text);
         if (!cancelled) {
-          setResults(found)
-          setError(null)
+          setResults(found);
+          setError(null);
         }
       } catch (problem) {
-        if (!cancelled) setError(problem instanceof Error ? problem.message : String(problem))
+        if (!cancelled) setError(problem instanceof Error ? problem.message : String(problem));
       } finally {
-        if (!cancelled) setSearching(false)
+        if (!cancelled) setSearching(false);
       }
-    }, 350)
+    }, 350);
     return () => {
-      cancelled = true
-      window.clearTimeout(timer)
-    }
-  }, [query, picked])
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [query, picked]);
 
-  const shown = picked || query.trim().length < 2 ? [] : results
+  const shown = picked || query.trim().length < 2 ? [] : results;
 
   const pick = (result: Pick) => {
-    setPicked(result)
-    setYear(result.year ? String(result.year) : '')
-    setNote('')
-    setError(null)
-  }
+    setPicked(result);
+    setYear(result.year ? String(result.year) : '');
+    setNote('');
+    setError(null);
+  };
 
   const send = async () => {
-    if (!picked) return
-    setSending(true)
-    setError(null)
+    if (!picked) return;
+    setSending(true);
+    setError(null);
     try {
-      const answer = await suggestFilm({ tmdbId: picked.tmdbId, note, year: year ? Number(year) : null })
-      setDone(answer)
-      if (answer.status === 'published') onPublished(answer.film)
+      const answer = await suggestFilm({tmdbId: picked.tmdbId, note, year: year ? Number(year) : null});
+      setDone(answer);
+      if (answer.status === 'published') onPublished(answer.film);
     } catch (problem) {
-      setError(problem instanceof Error ? problem.message : String(problem))
+      setError(problem instanceof Error ? problem.message : String(problem));
     } finally {
-      setSending(false)
+      setSending(false);
     }
-  }
+  };
 
   const startOver = () => {
-    setDone(null)
-    setPicked(null)
-    setQuery('')
-    setResults([])
-  }
+    setDone(null);
+    setPicked(null);
+    setQuery('');
+    setResults([]);
+  };
 
   if (done) {
-    const { film } = done
+    const {film} = done;
     return (
       <Dialog title={title} onClose={onClose}>
         <div className="suggest-done">
@@ -125,7 +125,7 @@ export function SuggestDialog({ owner, initialPick = null, onClose, onPublished 
           </button>
         </div>
       </Dialog>
-    )
+    );
   }
 
   if (picked) {
@@ -143,7 +143,7 @@ export function SuggestDialog({ owner, initialPick = null, onClose, onPublished 
                 min={1888}
                 max={MAX_YEAR}
                 value={year}
-                onChange={(event) => setYear(event.target.value)}
+                onChange={event => setYear(event.target.value)}
               />
             </label>
           </div>
@@ -155,7 +155,7 @@ export function SuggestDialog({ owner, initialPick = null, onClose, onPublished 
             rows={3}
             value={note}
             placeholder="One or two sentences about the film"
-            onChange={(event) => setNote(event.target.value)}
+            onChange={event => setNote(event.target.value)}
           />
           <span className="field-hint">{280 - note.length} characters left</span>
         </label>
@@ -173,7 +173,7 @@ export function SuggestDialog({ owner, initialPick = null, onClose, onPublished 
           </button>
         </div>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -185,11 +185,11 @@ export function SuggestDialog({ owner, initialPick = null, onClose, onPublished 
         placeholder="Search for a film"
         aria-label="Search for a film"
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={event => setQuery(event.target.value)}
       />
       {error && <p className="dialog-error">{error}</p>}
       <ul className="results" aria-busy={searching}>
-        {shown.map((result) => (
+        {shown.map(result => (
           <li key={result.tmdbId}>
             <button type="button" className="result" disabled={result.status !== null} onClick={() => pick(result)}>
               {result.poster ? <img src={poster(result.poster, 'w92')!} alt="" /> : <span className="result-blank" />}
@@ -208,5 +208,5 @@ export function SuggestDialog({ owner, initialPick = null, onClose, onPublished 
       )}
       <p className="field-hint">Film data from TMDB.</p>
     </Dialog>
-  )
+  );
 }

@@ -1,33 +1,33 @@
-import { memo } from 'react'
-import { poster } from '../images'
-import { starText, type FilmLog } from '../logs'
-import { SCENES } from '../scenes'
-import { cssVars } from '../style'
-import type { Film } from '../types'
+import {memo} from 'react';
+import {poster} from '../images';
+import {starText, type FilmLog} from '../logs';
+import {SCENES} from '../scenes';
+import {cssVars} from '../style';
+import type {Film} from '../types';
 
 interface FilmCardProps {
-  film: Film
-  log: FilmLog | undefined
-  selected: boolean
-  dimmed: boolean
-  onSelect: (id: string) => void
+  film: Film;
+  log: FilmLog | undefined;
+  selected: boolean;
+  dimmed: boolean;
+  onSelect: (id: string) => void;
 }
 
 function logTitle(log: FilmLog) {
-  const parts = [log.favorite ? 'One of your four favorites' : 'You have seen it']
-  if (log.rating) parts.push(`rated ${starText(log.rating)}`)
-  if (log.liked) parts.push('liked')
-  return parts.join(', ')
+  const parts = [log.favorite ? 'One of your four favorites' : 'You have seen it'];
+  if (log.rating) parts.push(`rated ${starText(log.rating)}`);
+  if (log.liked) parts.push('liked');
+  return parts.join(', ');
 }
 
-export const FilmCard = memo(function FilmCard({ film, log, selected, dimmed, onSelect }: FilmCardProps) {
-  const path = film.tmdb?.poster
+export const FilmCard = memo(function FilmCard({film, log, selected, dimmed, onSelect}: FilmCardProps) {
+  const path = film.tmdb?.poster;
   return (
     <button
       type="button"
       className={`card${selected ? ' is-selected' : ''}${dimmed ? ' is-dimmed' : ''}${film.personal ? ' is-personal' : ''}`}
       data-film={film.id}
-      style={cssVars({ '--scene': SCENES[film.scene].color })}
+      style={cssVars({'--scene': SCENES[film.scene].color})}
       onClick={() => onSelect(film.id)}
       aria-label={`${film.title}, ${film.directors.join(' and ')}, ${film.year}`}
     >
@@ -59,5 +59,5 @@ export const FilmCard = memo(function FilmCard({ film, log, selected, dimmed, on
       <span className="card-title">{film.title}</span>
       <span className="card-artist">{film.directors.join(', ')}</span>
     </button>
-  )
-})
+  );
+});

@@ -1,6 +1,6 @@
-import { clientIp, handle, HttpError, json } from './_lib/http.js'
-import { readFeed, USERNAME } from './_lib/letterboxd.js'
-import { rateLimit } from './_lib/store.js'
+import {clientIp, handle, HttpError, json} from './_lib/http.js';
+import {readFeed, USERNAME} from './_lib/letterboxd.js';
+import {rateLimit} from './_lib/store.js';
 
 /**
  * GET /api/letterboxd?user=: the member's latest diary entries, read from their public RSS feed, each with the
@@ -8,11 +8,11 @@ import { rateLimit } from './_lib/store.js'
  */
 export function GET(request: Request) {
   return handle(async () => {
-    const user = (new URL(request.url).searchParams.get('user') ?? '').trim()
-    if (!USERNAME.test(user)) throw new HttpError(400, 'That is not a Letterboxd username')
-    await rateLimit(`letterboxd:${clientIp(request)}`, 60, 3600)
+    const user = (new URL(request.url).searchParams.get('user') ?? '').trim();
+    if (!USERNAME.test(user)) throw new HttpError(400, 'That is not a Letterboxd username');
+    await rateLimit(`letterboxd:${clientIp(request)}`, 60, 3600);
     return json(await readFeed(user), {
-      headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
-    })
-  })
+      headers: {'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600'},
+    });
+  });
 }
